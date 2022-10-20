@@ -8,7 +8,6 @@ package com.mycompany.homebroker;
 import controller.crudController;
 import dao.clienteDAO;
 import java.util.Scanner;
-import utils.crudUtils;
 
 /**
  *
@@ -21,10 +20,11 @@ public class HomeBroker {
         clienteDAO clienteAux = new clienteDAO();
         int op = 0;
         int opUpdate = 0;
+        int id = 1;
         String aux = "";
         Scanner scan = new Scanner(System.in);
         
-        clienteAux.newData("nome", "endereco", "cpf", "phone", "usuario", "senha", true);
+        clienteAux.newData(id, "nome", "endereco", "cpf", "phone", "usuario", "senha", true);
         clienteController.insert(clienteAux);
 
                 
@@ -37,6 +37,7 @@ public class HomeBroker {
             op =  Integer.parseInt(scan.nextLine());
             switch (op){
                 case 1:
+                    id++;
                     System.out.println("Digite seu nome");
                     String name = scan.nextLine();
                     System.out.println("Escolha um usuário");
@@ -49,17 +50,17 @@ public class HomeBroker {
                     String cpf = scan.nextLine();
                     System.out.println("Digite Seu Telefone");
                     String phone = scan.nextLine();
-                    
-                    clienteAux.newData(name, adress, cpf, phone, user, pass, false);
-                    clienteController.insert(clienteAux);
+                    clienteDAO newClient = new clienteDAO();
+                    newClient.newData(id, name, adress, cpf, phone, user, pass, false);
+                    clienteController.insert(newClient);
                     System.out.println("Criado");
                     break;
                     
                 case 2:
                     do {
                         System.out.println("Digite o id do Usuário");
-                        int id = scan.nextInt();
-                        int indice = clienteController.returnId(id);
+                        int idUpdate = scan.nextInt();
+                        int indice = clienteController.returnId(idUpdate);
                         if(indice != -1) {
                             System.out.println("Digite o nome");
                             scan.nextLine();
@@ -75,7 +76,7 @@ public class HomeBroker {
                             System.out.println("Digite o Telefone");
                             String phoneUpdate = scan.nextLine();
                             clienteDAO newObj = new clienteDAO();
-                            newObj.newData(nameUpdate, adressUpdate, cpfUpdate, phoneUpdate, userUpdate, passUpdate, false);
+                            newObj.newData(idUpdate, nameUpdate, adressUpdate, cpfUpdate, phoneUpdate, userUpdate, passUpdate, false);
                             if(clienteController.update(newObj, indice)){
                                System.out.println("Atualizado");
                             } else {
@@ -97,6 +98,7 @@ public class HomeBroker {
                     for (clienteDAO dAO : view) {
                         if(dAO != null){
                             System.out.println(dAO.nome);
+                            System.out.println(dAO.id);
                         }                      
                     }
                     break;

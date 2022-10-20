@@ -11,7 +11,7 @@ import java.util.Date;
  * @author rapha
  */
 public class clienteDAO {
-    public int id = 0;
+    public int id;
     public String nome;
     public String endereco;
     public String CPF;
@@ -22,10 +22,10 @@ public class clienteDAO {
     public Date dataCriacao;
     public Date dataModificacao;
     
-    public void newData (String name, String adress, 
+    public void newData (int iden, String name, String adress, 
             String cpf, String phone, String user, String pass, 
             boolean admin) {
-        this.id++;
+        this.id = iden;
         this.nome = name;
         this.endereco = adress;
         this.CPF = cpf;
