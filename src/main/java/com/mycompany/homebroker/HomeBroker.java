@@ -31,12 +31,11 @@ public class HomeBroker {
         clienteController.insert(clienteAux, vetorCliente);
 
                 
-        
+        aux = "1 - Adicionar Usuario\n";
+        aux += "2 - Editar Usuario\n";
+        aux += "3 - Mostrar Cadastros\n";
+        aux += "4 - Excluir Usuário";
         do{
-            aux = "1 - Adicionar Usuario\n";
-            aux += "2 - Editar Usuario\n";
-            aux += "3 - Mostrar Cadastros\n";
-            aux += "4 - Excluir Usuário";
             System.out.println("Digite uma opcao");
             System.out.println(aux);
             op =  Integer.parseInt(scan.nextLine());
