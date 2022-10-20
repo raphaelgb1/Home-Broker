@@ -11,16 +11,16 @@ import java.util.Date;
  * @author rapha
  */
 public class clienteDAO {
-    int id = 0;
-    String nome;
-    String endereco;
-    String CPF;
-    String telefone;
-    String login;
-    String senha;
-    boolean adm;
-    Date dataCriacao;
-    Date dataModificacao;
+    public int id = 0;
+    public String nome;
+    public String endereco;
+    public String CPF;
+    public String telefone;
+    public String login;
+    public String senha;
+    public boolean adm;
+    public Date dataCriacao;
+    public Date dataModificacao;
     
     public void newData (String name, String adress, 
             String cpf, String phone, String user, String pass, 

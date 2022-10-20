@@ -19,9 +19,8 @@ public class HomeBroker {
     public static void main(String[] args) {
         crudController clienteController = new crudController();
         clienteDAO clienteAux = new clienteDAO();
-        crudUtils utils = new crudUtils();
-        int indice = 0;
         int op = 0;
+        int opUpdate = 0;
         String aux = "";
         Scanner scan = new Scanner(System.in);
         
@@ -57,29 +56,48 @@ public class HomeBroker {
                     break;
                     
                 case 2:
-                    System.out.println("Digite seu nome");
-                    String nameUpdate = scan.nextLine();
-                    System.out.println("Escolha um usuário");
-                    String userUpdate = scan.nextLine();
-                    System.out.println("Escolha uma senha");
-                    String passUpdate = scan.nextLine();
-                    System.out.println("Digite Seu Endereço: ");
-                    String adressUpdate = scan.nextLine();
-                    System.out.println("Digite Seu CPF");
-                    String cpfUpdate = scan.nextLine();
-                    System.out.println("Digite Seu Telefone");
-                    String phoneUpdate = scan.nextLine();
-                    clienteDAO newObj = new clienteDAO();
-                    newObj.newData(nameUpdate, adressUpdate, cpfUpdate, phoneUpdate, userUpdate, passUpdate, false);
-                    clienteController.update(clienteAux, newObj);
-                    System.out.println("Atualizado");
+                    do {
+                        System.out.println("Digite o id do Usuário");
+                        int id = scan.nextInt();
+                        int indice = clienteController.returnId(id);
+                        if(indice != -1) {
+                            System.out.println("Digite o nome");
+                            scan.nextLine();
+                            String nameUpdate = scan.nextLine();
+                            System.out.println("Escolha o usuário");
+                            String userUpdate = scan.nextLine();
+                            System.out.println("Escolha a senha");
+                            String passUpdate = scan.nextLine();
+                            System.out.println("Digite o Endereço: ");
+                            String adressUpdate = scan.nextLine();
+                            System.out.println("Digite o CPF");
+                            String cpfUpdate = scan.nextLine();
+                            System.out.println("Digite o Telefone");
+                            String phoneUpdate = scan.nextLine();
+                            clienteDAO newObj = new clienteDAO();
+                            newObj.newData(nameUpdate, adressUpdate, cpfUpdate, phoneUpdate, userUpdate, passUpdate, false);
+                            if(clienteController.update(newObj, indice)){
+                               System.out.println("Atualizado");
+                            } else {
+                                System.out.println("Ocorreu um erro durante a atualização"); 
+                            }
+                            opUpdate = 1;
+                        } else {
+                            System.out.println("Usuário não encontrado");
+                            System.out.println("\nDeseja Voltar? \n1 - Sim \n2 - Não");
+                            opUpdate = scan.nextInt();
+                        }
+                    } while(opUpdate != 1);
+                    
                     break;
                     
                 case 3:
                     clienteDAO[] view = new clienteDAO[5];
                     view = clienteController.acessarVetor();
                     for (clienteDAO dAO : view) {
-                        System.out.println(dAO);
+                        if(dAO != null){
+                            System.out.println(dAO.nome);
+                        }                      
                     }
                     break;
             } 

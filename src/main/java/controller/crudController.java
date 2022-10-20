@@ -16,6 +16,19 @@ public class crudController {
     private clienteDAO[] cliente = new clienteDAO[5];
     private crudUtils utils = new crudUtils();
     
+    public int returnId (int id){
+        for (clienteDAO obj : cliente) {
+            if(obj != null) {
+                if(obj.id == id){
+                    return id-1;
+                }
+            } else {
+                return -1;
+            }                     
+        }
+        return -1;
+    }
+    
     public boolean insert (Object obj) {
         int indice = utils.verificar(cliente);
         if( indice >= 0){
@@ -26,14 +39,13 @@ public class crudController {
         return false;
     }
     
-    public boolean update (Object obj, Object newObj) {
-        int indice = utils.encontrar(cliente, obj);
-        if( indice >= 0){
-           if(utils.insert(cliente, newObj, indice)) {
-                return true;
-            }
+    public boolean update (Object newObj, int indice) {
+        try {
+            utils.insert(cliente, newObj, indice);
+            return true;
+        } catch (Exception err) {
+            return false;  
         }
-        return false;
     }
     
     public clienteDAO[] acessarVetor () {

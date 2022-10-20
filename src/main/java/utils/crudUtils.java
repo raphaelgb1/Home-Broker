@@ -19,15 +19,6 @@ public class crudUtils {
         return -1;
     }
     
-    public int encontrar (Object vetor[], Object object) {
-        for(int x = 0; x < vetor.length; x++){
-            if(vetor[x].equals(object)){
-                return x;
-            }
-        }
-        return -1;
-    }
-    
     public boolean insert (Object vetor[], Object obj, int indice) {
         vetor[indice] = obj;   
         return true;
