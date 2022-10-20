@@ -11,22 +11,35 @@ package utils;
 public class crudUtils {
     
     public int verificar (Object vetor[]) {
-        for(int x = 0; x < vetor.length; x++){
-            if(vetor[x] == null){
-                return x;
+        try {
+            for(int x = 0; x < vetor.length; x++){
+                if(vetor[x] == null){
+                    return x;
+                }
             }
+            return -1;
+        } catch (Exception err) {
+            return -2;
         }
-        return -1;
+        
     }
     
     public boolean insert (Object vetor[], Object obj, int indice) {
-        vetor[indice] = obj;   
-        return true;
+         try {
+            vetor[indice] = obj;   
+            return true;
+        } catch (Exception err) {
+            return false;
+        }
     }
     
-    public boolean delete (Object vetor[], Object obj, int indice) {
-        vetor[indice] = null;   
-        return true;
+    public boolean delete (Object vetor[], int indice) {
+        try {
+            vetor[indice] = null;   
+            return true;
+        } catch (Exception err) {
+            return false;
+        }
     }
 }
 

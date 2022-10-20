@@ -4,7 +4,6 @@
  */
 package controller;
 
-import dao.clienteDAO;
 import utils.crudUtils;
 
 /**
@@ -13,44 +12,33 @@ import utils.crudUtils;
  */
 public class crudController {
     
-    private clienteDAO[] cliente = new clienteDAO[5];
-    private crudUtils utils = new crudUtils();
+    crudUtils utils = new crudUtils();
     
-    public int returnId (int id){
-        for (clienteDAO obj : cliente) {
-            if(obj != null) {
-                if(obj.id == id){
-                    return id-1;
-                }
-            } else {
-                return -1;
-            }                     
-        }
-        return -1;
-    }
-    
-    public boolean insert (Object obj) {
-        int indice = utils.verificar(cliente);
+    public boolean insert (Object obj, Object[] vetor) {
+        int indice = utils.verificar(vetor);
         if( indice >= 0){
-           if(utils.insert(cliente, obj, indice)) {
+           if(utils.insert(vetor, obj, indice)) {
                 return true;
             }
         }
         return false;
     }
     
-    public boolean update (Object newObj, int indice) {
+    public boolean update (Object newObj, Object[] vetor, int indice) {
         try {
-            utils.insert(cliente, newObj, indice);
+            utils.insert(vetor, newObj, indice);
             return true;
         } catch (Exception err) {
             return false;  
         }
     }
     
-    public clienteDAO[] acessarVetor () {
-        clienteDAO[] aux = new clienteDAO[5];
-        aux = cliente;
-        return aux;
+    public boolean delete (int indice, Object[] vetor) {
+        try {
+            utils.delete(vetor, indice);
+            return true;
+        } catch (Exception err) {
+            return false;  
+        }
     }
 }

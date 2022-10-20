@@ -5,7 +5,7 @@
 
 package com.mycompany.homebroker;
 
-import controller.crudController;
+import controller.clienteController;
 import dao.clienteDAO;
 import java.util.Scanner;
 
@@ -16,22 +16,27 @@ import java.util.Scanner;
 public class HomeBroker {
 
     public static void main(String[] args) {
-        crudController clienteController = new crudController();
-        clienteDAO clienteAux = new clienteDAO();
+        clienteController clienteController = new clienteController();
+        clienteDAO[] vetorCliente = new clienteDAO[5];
+        
         int op = 0;
+        int opDelete = 0;
         int opUpdate = 0;
         int id = 1;
-        String aux = "";
+        String aux;
         Scanner scan = new Scanner(System.in);
         
+        clienteDAO clienteAux = new clienteDAO();
         clienteAux.newData(id, "nome", "endereco", "cpf", "phone", "usuario", "senha", true);
-        clienteController.insert(clienteAux);
+        clienteController.insert(clienteAux, vetorCliente);
 
                 
-        aux += "1 - Adicionar Usuario\n";
-        aux += "2 - Editar Usuario\n";
-        aux += "3 - Mostrar Cadastros";
+        
         do{
+            aux = "1 - Adicionar Usuario\n";
+            aux += "2 - Editar Usuario\n";
+            aux += "3 - Mostrar Cadastros\n";
+            aux += "4 - Excluir Usuário";
             System.out.println("Digite uma opcao");
             System.out.println(aux);
             op =  Integer.parseInt(scan.nextLine());
@@ -52,7 +57,7 @@ public class HomeBroker {
                     String phone = scan.nextLine();
                     clienteDAO newClient = new clienteDAO();
                     newClient.newData(id, name, adress, cpf, phone, user, pass, false);
-                    clienteController.insert(newClient);
+                    clienteController.insert(newClient, vetorCliente);
                     System.out.println("Criado");
                     break;
                     
@@ -60,8 +65,8 @@ public class HomeBroker {
                     do {
                         System.out.println("Digite o id do Usuário");
                         int idUpdate = scan.nextInt();
-                        int indice = clienteController.returnId(idUpdate);
-                        if(indice != -1) {
+                        int indice = clienteController.returnId(idUpdate, vetorCliente);
+                        if(indice >= 0) {
                             System.out.println("Digite o nome");
                             scan.nextLine();
                             String nameUpdate = scan.nextLine();
@@ -77,33 +82,58 @@ public class HomeBroker {
                             String phoneUpdate = scan.nextLine();
                             clienteDAO newObj = new clienteDAO();
                             newObj.newData(idUpdate, nameUpdate, adressUpdate, cpfUpdate, phoneUpdate, userUpdate, passUpdate, false);
-                            if(clienteController.update(newObj, indice)){
+                            if(clienteController.update(newObj, vetorCliente, indice)){
                                System.out.println("Atualizado");
                             } else {
                                 System.out.println("Ocorreu um erro durante a atualização"); 
                             }
                             opUpdate = 1;
                         } else {
-                            System.out.println("Usuário não encontrado");
-                            System.out.println("\nDeseja Voltar? \n1 - Sim \n2 - Não");
-                            opUpdate = scan.nextInt();
+                            if(indice == -1) {
+                                System.out.println("Usuário não encontrado");
+                                System.out.println("\nDeseja Voltar? \n1 - Sim \n2 - Não");
+                                opUpdate = scan.nextInt();
+                            } else {
+                                System.out.println("Ocorreu um erro durante a atualização"); 
+                            }
                         }
                     } while(opUpdate != 1);
                     
                     break;
                     
                 case 3:
-                    clienteDAO[] view = new clienteDAO[5];
-                    view = clienteController.acessarVetor();
-                    for (clienteDAO dAO : view) {
+                    for (clienteDAO dAO : vetorCliente) {
                         if(dAO != null){
                             System.out.println(dAO.nome);
                             System.out.println(dAO.id);
                         }                      
                     }
                     break;
+                    
+                case 4:
+                    do {
+                        System.out.println("Digite o id do Usuário");
+                        int idUpdate = scan.nextInt();
+                        int indice = clienteController.returnId(idUpdate, vetorCliente);
+                        if(indice >= 0) {
+                            if(clienteController.delete(indice, vetorCliente)){
+                               System.out.println("Usuário Excluído");
+                            } else {
+                                System.out.println("Ocorreu um erro durante a exclusão"); 
+                            }
+                            opDelete = 1;
+                        } else {
+                            if(indice == -1) {
+                                System.out.println("Usuário não encontrado");
+                                System.out.println("\nDeseja Voltar? \n1 - Sim \n2 - Não");
+                                opUpdate = scan.nextInt();
+                            } else {
+                                System.out.println("Ocorreu um erro durante a atualização"); 
+                            }
+                        }
+                    } while(opDelete != 1);
+                    break;
             } 
-            
         } while (op != 6);
     }
 }
