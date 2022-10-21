@@ -24,4 +24,19 @@ public class ClienteController extends CrudController {
         }
         return -1;
     }
+    
+    public ClienteDAO returnObjectById (int id, ClienteDAO[] vetor){
+        try {
+            for (ClienteDAO obj : vetor) {
+                if(obj != null) {
+                    if(obj.id == id){
+                        return obj;
+                    }
+                }                      
+            }
+            return null;
+        } catch (Exception err) {
+            return null;
+        }
+    }
 }

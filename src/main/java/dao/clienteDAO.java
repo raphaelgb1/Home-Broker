@@ -22,18 +22,18 @@ public class ClienteDAO {
     public Date dataCriacao;
     public Date dataModificacao;
     
-    public void newData (int iden, String name, String adress, 
-            String cpf, String phone, String user, String pass, 
-            boolean admin) {
-        this.id = iden;
-        this.nome = name;
-        this.endereco = adress;
-        this.CPF = cpf;
-        this.telefone = phone;
-        this.login = user;
-        this.senha = pass;
-        this.adm = admin;
-        this.dataCriacao = new Date();
-        this.dataModificacao = null;
+    public void newData (int id, String nome, String endereco, 
+            String CPF, String telefone, String login, String senha, 
+            boolean adm, Date dataCriacao, Date dataModificacao) {
+        this.id = id;
+        this.nome = nome;
+        this.endereco = endereco;
+        this.CPF = CPF;
+        this.telefone = telefone;
+        this.login = login;
+        this.senha = senha;
+        this.adm = adm;
+        this.dataCriacao = dataCriacao;
+        this.dataModificacao = dataModificacao;
     }
 }
