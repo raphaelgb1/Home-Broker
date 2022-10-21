@@ -14,15 +14,13 @@ public class CrudController {
     
     CrudDAO utils = new CrudDAO();
     
-    public int insert (Object obj, Object[] vetor) {
+    public boolean insert (Object obj, Object[] vetor) {
         try {
             int indice = utils.verificar(vetor);
-            if( indice >= 0){
-               utils.insert(vetor, obj, indice);
-            }
-            return indice;
+            utils.insert(vetor, obj, indice);
+            return true;
         } catch (Exception err) {
-            return -2;
+            return false;
         }
     }
     
