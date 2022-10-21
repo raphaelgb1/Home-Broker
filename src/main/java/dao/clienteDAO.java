@@ -10,7 +10,7 @@ import java.util.Date;
  *
  * @author rapha
  */
-public class clienteDAO {
+public class ClienteDAO {
     public int id;
     public String nome;
     public String endereco;

@@ -4,24 +4,26 @@
  */
 package controller;
 
-import utils.crudUtils;
+import dao.CrudDAO;
 
 /**
  *
  * @author rapha
  */
-public class crudController {
+public class CrudController {
     
-    crudUtils utils = new crudUtils();
+    CrudDAO utils = new CrudDAO();
     
-    public boolean insert (Object obj, Object[] vetor) {
-        int indice = utils.verificar(vetor);
-        if( indice >= 0){
-           if(utils.insert(vetor, obj, indice)) {
-                return true;
+    public int insert (Object obj, Object[] vetor) {
+        try {
+            int indice = utils.verificar(vetor);
+            if( indice >= 0){
+               utils.insert(vetor, obj, indice);
             }
+            return indice;
+        } catch (Exception err) {
+            return -2;
         }
-        return false;
     }
     
     public boolean update (Object newObj, Object[] vetor, int indice) {

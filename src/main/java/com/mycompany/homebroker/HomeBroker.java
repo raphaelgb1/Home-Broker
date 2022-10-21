@@ -5,9 +5,11 @@
 
 package com.mycompany.homebroker;
 
-import controller.clienteController;
-import dao.clienteDAO;
+import controller.ClienteController;
+import dao.ClienteDAO;
 import java.util.Scanner;
+import javax.swing.JOptionPane;
+import utils.UtilsObj;
 
 /**
  *
@@ -16,70 +18,60 @@ import java.util.Scanner;
 public class HomeBroker {
 
     public static void main(String[] args) {
-        clienteController clienteController = new clienteController();
-        clienteDAO[] vetorCliente = new clienteDAO[5];
+        Scanner scan = new Scanner(System.in);
+        ClienteController clienteController = new ClienteController();
+        ClienteDAO[] vetorCliente = new ClienteDAO[5];
+        UtilsObj utils = new UtilsObj();
         
         int op = 0;
         int opDelete = 0;
         int opUpdate = 0;
         int id = 1;
-        String aux;
-        Scanner scan = new Scanner(System.in);
-        
-        clienteDAO clienteAux = new clienteDAO();
+        String menu = "1 - Adicionar Usuario\n2 - Editar Usuario\n3 - Mostrar Cadastros\n4 - Excluir Usuário\n\nDigite uma opção";
+             
+        ClienteDAO clienteAux = new ClienteDAO();
         clienteAux.newData(id, "nome", "endereco", "cpf", "phone", "usuario", "senha", true);
         clienteController.insert(clienteAux, vetorCliente);
-
-                
-        aux = "1 - Adicionar Usuario\n";
-        aux += "2 - Editar Usuario\n";
-        aux += "3 - Mostrar Cadastros\n";
-        aux += "4 - Excluir Usuário";
+        
         do{
-            System.out.println("Digite uma opcao");
-            System.out.println(aux);
-            op =  Integer.parseInt(scan.nextLine());
+            op =  Integer.parseInt(JOptionPane.showInputDialog(menu));
             switch (op){
                 case 1:
-                    id++;
-                    System.out.println("Digite seu nome");
-                    String name = scan.nextLine();
-                    System.out.println("Escolha um usuário");
-                    String user = scan.nextLine();
-                    System.out.println("Escolha uma senha");
-                    String pass = scan.nextLine();
-                    System.out.println("Digite Seu Endereço: ");
-                    String adress = scan.nextLine();
-                    System.out.println("Digite Seu CPF");
-                    String cpf = scan.nextLine();
-                    System.out.println("Digite Seu Telefone");
-                    String phone = scan.nextLine();
-                    clienteDAO newClient = new clienteDAO();
-                    newClient.newData(id, name, adress, cpf, phone, user, pass, false);
-                    clienteController.insert(newClient, vetorCliente);
-                    System.out.println("Criado");
+                    
+                    if(utils.vetorLength(vetorCliente) != 5) {
+                        id++;
+                        String name   = JOptionPane.showInputDialog("Digite um nome");
+                        String adress = JOptionPane.showInputDialog("Escolha o usuário");
+                        String cpf    = JOptionPane.showInputDialog("Escolha uma senha");
+                        String phone  = JOptionPane.showInputDialog("Digite o Endereço");
+                        String user   = JOptionPane.showInputDialog("Digite o CPF");
+                        String pass   = JOptionPane.showInputDialog("Digite o Telefone");
+                        ClienteDAO newClient = new ClienteDAO();
+                        newClient.newData(id, name, adress, cpf, phone, user, pass, false);
+                        int resultado = clienteController.insert(newClient, vetorCliente);
+                        if (resultado > 0) {
+                            JOptionPane.showMessageDialog (null, "Usuário Criado");
+                        }  else {
+                            JOptionPane.showMessageDialog (null, "Ocorreu um erro durante a criação");
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog (null, "Máximo de Usuários Cadastrados, exclua um usuário");
+                    }
+                    
                     break;
                     
                 case 2:
                     do {
-                        System.out.println("Digite o id do Usuário");
-                        int idUpdate = scan.nextInt();
+                        int idUpdate = Integer.parseInt(JOptionPane.showInputDialog("Digite o Id do Usuário"));
                         int indice = clienteController.returnId(idUpdate, vetorCliente);
                         if(indice >= 0) {
-                            System.out.println("Digite o nome");
-                            scan.nextLine();
-                            String nameUpdate = scan.nextLine();
-                            System.out.println("Escolha o usuário");
-                            String userUpdate = scan.nextLine();
-                            System.out.println("Escolha a senha");
-                            String passUpdate = scan.nextLine();
-                            System.out.println("Digite o Endereço: ");
-                            String adressUpdate = scan.nextLine();
-                            System.out.println("Digite o CPF");
-                            String cpfUpdate = scan.nextLine();
-                            System.out.println("Digite o Telefone");
-                            String phoneUpdate = scan.nextLine();
-                            clienteDAO newObj = new clienteDAO();
+                            String nameUpdate   = JOptionPane.showInputDialog("Digite um nome");
+                            String userUpdate   = JOptionPane.showInputDialog("Escolha o usuário");
+                            String passUpdate   = JOptionPane.showInputDialog("Escolha uma senha");
+                            String adressUpdate = JOptionPane.showInputDialog("Digite o Endereço");
+                            String cpfUpdate    = JOptionPane.showInputDialog("Digite o CPF");
+                            String phoneUpdate  = JOptionPane.showInputDialog("Digite o Telefone");
+                            ClienteDAO newObj   = new ClienteDAO();
                             newObj.newData(idUpdate, nameUpdate, adressUpdate, cpfUpdate, phoneUpdate, userUpdate, passUpdate, false);
                             if(clienteController.update(newObj, vetorCliente, indice)){
                                System.out.println("Atualizado");
@@ -101,7 +93,7 @@ public class HomeBroker {
                     break;
                     
                 case 3:
-                    for (clienteDAO dAO : vetorCliente) {
+                    for (ClienteDAO dAO : vetorCliente) {
                         if(dAO != null){
                             System.out.println(dAO.nome);
                             System.out.println(dAO.id);
@@ -111,8 +103,7 @@ public class HomeBroker {
                     
                 case 4:
                     do {
-                        System.out.println("Digite o id do Usuário");
-                        int idUpdate = scan.nextInt();
+                        int idUpdate = Integer.parseInt(JOptionPane.showInputDialog("Digite o Id do Usuário"));
                         int indice = clienteController.returnId(idUpdate, vetorCliente);
                         if(indice >= 0) {
                             if(clienteController.delete(indice, vetorCliente)){

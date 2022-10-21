@@ -4,17 +4,16 @@
  */
 package controller;
 
-import dao.clienteDAO;
-import utils.crudUtils;
+import dao.ClienteDAO;
 
 /**
  *
  * @author rapha
  */
-public class clienteController extends crudController {
+public class ClienteController extends CrudController {
     
-    public int returnId (int id, clienteDAO[] vetor){
-        for (clienteDAO obj : vetor) {
+    public int returnId (int id, ClienteDAO[] vetor){
+        for (ClienteDAO obj : vetor) {
             if(obj != null) {
                 if(obj.id == id){
                     return id-1;
