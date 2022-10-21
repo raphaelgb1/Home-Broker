@@ -12,18 +12,18 @@ import dao.ContaDAO;
  */
 public class ContaController extends CrudController {
     
-    public int returnId (int id, ContaDAO[] vetor){
+    public int returnIndex (int id, ContaDAO[] vetor){
         try {
-            for (ContaDAO obj : vetor) {
-                if(obj != null) {
-                    if(obj.id == id){
-                        return id-1;
+            for (int x = 0; x < vetor.length; x++) {
+                if(vetor[x] != null) {
+                    if(vetor[x].id == id){
+                        return x;
                     }
                 }            
             }
             return -1;
         } catch (Exception err) {
-            return -1;
+            return -2;
         }
     }
     

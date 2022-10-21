@@ -34,7 +34,7 @@ public class HomeBroker {
         
         int idCliente = 1;
         int idConta = 0;
-        String menu = "1 - Adicionar Usuario\n2 - Editar Usuario\n3 - Mostrar Cadastros\n4 - Excluir Usuário\n5 - Conta\n\nDigite uma opção";
+        String menu = "1 - Adicionar Usuario\n2 - Editar Usuario\n3 - Mostrar Cadastros\n4 - Excluir Usuário\n5 - Conta\n6 - Sair\n\nDigite uma opção";
         String menuConta = "1 - Visualizar Informações da Conta\n2 - Editar Conta\n3 - Excluir Conta\n4 - Voltar\n\nDigite Uma Opção";
         //CRIAÇÃO DO USUÁRIO ADM
         Date creationAdm       = new Date();    
@@ -42,6 +42,7 @@ public class HomeBroker {
         clienteAux.newData(idCliente, "adm", "adm", "adm", "adm", "adm", "adm123", true, creationAdm, null);
         clienteController.insert(clienteAux, vetorCliente);
         
+        //MENU DO USUÁRIO ADMINISTRADOR
         do{
             op =  Integer.parseInt(JOptionPane.showInputDialog(menu));
             switch (op){
@@ -76,68 +77,82 @@ public class HomeBroker {
                     
                 case 2:
                     do {
-                        String auxMenuContaView = "";
-                        for (ClienteDAO element : vetorCliente) {
-                            if(element != null && element.adm == false){
-                                auxMenuContaView += "Id: " + element.id + "-  Cliente: " + element.nome + "\n";
-                            }                      
-                        }
-                        int idUpdate = Integer.parseInt(JOptionPane.showInputDialog(auxMenuContaView + "\n\nDigite o Id do Usuário"));
-                        int indice = clienteController.returnId(idUpdate, vetorCliente);
-                        if(indice >= 0) {
-                            String nameUpdate   = JOptionPane.showInputDialog("Digite um nome");
-                            String userUpdate   = JOptionPane.showInputDialog("Escolha o usuário");
-                            String passUpdate   = JOptionPane.showInputDialog("Escolha uma senha");
-                            String adressUpdate = JOptionPane.showInputDialog("Digite o Endereço");
-                            String cpfUpdate    = JOptionPane.showInputDialog("Digite o CPF");
-                            String phoneUpdate  = JOptionPane.showInputDialog("Digite o Telefone");
-                            Date update       = new Date();
-                            ClienteDAO newObj   = new ClienteDAO();
-                            newObj.newData(idUpdate, nameUpdate, adressUpdate, cpfUpdate, phoneUpdate, userUpdate, passUpdate, false, null, update);
-                            if(clienteController.update(newObj, vetorCliente, indice)){
-                               System.out.println("Atualizado");
-                            } else {
-                                System.out.println("Ocorreu um erro durante a atualização"); 
+                        if(clienteController.verifyObjectIsVoid(vetorCliente) == 0){
+                            String auxMenuClienteUpdate = "";
+                            for (ClienteDAO element : vetorCliente) {
+                                if(element != null){
+                                    auxMenuClienteUpdate += "Cliente: " + element.nome + " - Id: " + element.id;
+                                }                      
                             }
-                            opUpdate = 1;
+                            int idUpdate = Integer.parseInt(JOptionPane.showInputDialog(auxMenuClienteUpdate + "\n\nDigite o Id do Usuário"));
+                            ClienteDAO clienteUdpdate = clienteController.returnObjectById(idUpdate, vetorCliente);
+                            int indice = clienteController.returnIndex(idUpdate, vetorCliente);
+                            if(clienteUdpdate.id >= 0) {
+                                String verifySenha = JOptionPane.showInputDialog("Confirme a senha do Administrador");
+                                if(verifySenha.equals(vetorCliente[0].senha)){
+                                    String nameUpdate   = JOptionPane.showInputDialog("Nome: "     + clienteUdpdate.nome + "\n\nDigite novo Nome");
+                                    String userUpdate   = JOptionPane.showInputDialog("Usuário: "  + clienteUdpdate.nome +"\n\nDigite novo Usuário");
+                                    String passUpdate   = JOptionPane.showInputDialog("Senha: "    + clienteUdpdate.nome +"\n\nEscolha nova Senha");
+                                    String adressUpdate = JOptionPane.showInputDialog("Endereço: " + clienteUdpdate.nome +"\n\nDigite novo Endereço");
+                                    String cpfUpdate    = JOptionPane.showInputDialog("CPF: "      + clienteUdpdate.nome +"\n\nDigite novo CPF");
+                                    String phoneUpdate  = JOptionPane.showInputDialog("Telefone: " + clienteUdpdate.nome +"\n\nDigite novo Telefone");
+                                    Date update         = new Date();
+                                    ClienteDAO newObj   = new ClienteDAO();
+                                    newObj.newData(idUpdate, nameUpdate, adressUpdate, cpfUpdate, phoneUpdate, userUpdate, passUpdate, false, null, update);
+                                    if(clienteController.update(newObj, vetorCliente, indice)){
+                                       JOptionPane.showMessageDialog(null,"Atualizado");
+                                    } else {
+                                        JOptionPane.showMessageDialog(null,"Ocorreu um erro durante a atualização"); 
+                                    }
+                                    opUpdate = 1;
+                                }  else {
+                                    JOptionPane.showMessageDialog(null,"Senha Inválida");
+                                }
+                            }
+                        
                         } else {
-                            if(indice == -1) {
-                                JOptionPane.showMessageDialog(null, "Usuário não encontrado");
-                            } else {
-                                JOptionPane.showMessageDialog(null, "Ocorreu um erro durante a atualização"); 
-                            }
+                                JOptionPane.showMessageDialog(null, "Não há clientes cadastrados");
+                                opUpdate = 1;
                         }
                     } while(opUpdate != 1);
                     
                     break;
                     
                 case 3:
-                    for (ClienteDAO element : vetorCliente) {
-                        if(element != null){
-                            System.out.println(element.nome);
-                            System.out.println(element.id);
-                        }                      
-                    }
+                    String auxMenuClienteView = "";
+                        for (ClienteDAO element : vetorCliente) {
+                            if(element != null && element.adm == false){
+                                auxMenuClienteView += "Id: " + element.id + "-  Cliente: " + element.nome + "\n";
+                            }                      
+                        }
+                    int idViewCliente = Integer.parseInt(JOptionPane.showInputDialog(auxMenuClienteView));
+                    ClienteDAO clienteView = clienteController.returnObjectById(idViewCliente, vetorCliente);
+                    JOptionPane.showMessageDialog(null,"Id: "+clienteView.id +"Nome: "+clienteView.nome);
+
                     break;
                     
                 case 4:
                     do {
                         int idDelete = Integer.parseInt(JOptionPane.showInputDialog("Digite o Id do Usuário"));
-                        int indice = clienteController.returnId(idDelete, vetorCliente);
+                        int indice = clienteController.returnIndex(idDelete, vetorCliente);
                         if(indice >= 0) {
-                            if(clienteController.delete(indice, vetorCliente)){
-                               System.out.println("Usuário Excluído");
-                            } else {
-                                System.out.println("Ocorreu um erro durante a exclusão"); 
-                            }
-                            opDelete = 1;
+                            String verifySenha = JOptionPane.showInputDialog("Confirme a senha do Administrador");
+                                if(verifySenha.equals(vetorCliente[0].senha)){
+                                    if(clienteController.delete(indice, vetorCliente)){
+                                       JOptionPane.showMessageDialog(null,"Usuário Excluído");
+                                    } else {
+                                        JOptionPane.showMessageDialog(null,"Ocorreu um erro durante a exclusão"); 
+                                    }
+                                    opDelete = 1;
+                                } else {
+                                    JOptionPane.showMessageDialog(null,"Senha Inválida");
+                                }
                         } else {
                             if(indice == -1) {
-                                System.out.println("Usuário não encontrado");
-                                System.out.println("\nDeseja Voltar? \n1 - Sim \n2 - Não");
+                                JOptionPane.showMessageDialog(null,"Usuário não encontrado");
                                 opUpdate = scan.nextInt();
                             } else {
-                                System.out.println("Ocorreu um erro durante a atualização"); 
+                                JOptionPane.showMessageDialog(null,"Ocorreu um erro durante a atualização"); 
                             }
                         }
                     } while(opDelete != 1);
@@ -157,17 +172,16 @@ public class HomeBroker {
                                 }
                                 int idViewConta = Integer.parseInt(JOptionPane.showInputDialog(auxMenuContaView));
                                 ContaDAO contaView = contaController.returnObjectById(idViewConta, vetorConta);
-                                ClienteDAO clienteView = clienteController.returnObjectById(contaView.cliente, vetorCliente);
-                                String internView = "   Cliente\n" + clienteView.nome + "\nSaldo: " + contaView.saldo + "\nData de Criação: " + contaView.dataCriacao;
-                                if(clienteView.dataModificacao != null){
-                                    internView += "\nÚltima Modificação: " + clienteView.dataModificacao;
-                                }
-                                JOptionPane.showMessageDialog(null, internView);
+                                ClienteDAO clienteViewConta = clienteController.returnObjectById(contaView.cliente, vetorCliente);
+                                String internView = "   Cliente\n" + clienteViewConta.nome + "\nSaldo: " + contaView.saldo + "\nData de Criação: " + contaView.dataCriacao;
+                                internView += (clienteViewConta.dataModificacao != null) ?  "\nÚltima Modificação: " + clienteViewConta.dataModificacao : "";
+                                
                             break;
                         }
                     } while(opConta != 4);
                     break;
             } 
         } while (op != 6);
+        JOptionPane.showMessageDialog(null, "Usuário Deslogado");
     }
 }
