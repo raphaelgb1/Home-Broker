@@ -54,4 +54,18 @@ public class ClienteController extends CrudController {
             return -1;
         }
     }
+    
+    public int verifyHaveOnlyAdm (ClienteDAO[] vetor) {//VERIFICAR SE HÁ 
+        try {
+            int count = 0;
+             for (ClienteDAO obj : vetor) {
+                if(obj != null) {
+                    count++;
+                }                      
+            }
+            return count;
+        } catch (Exception err) {
+            return -1;
+        }
+    }
 }

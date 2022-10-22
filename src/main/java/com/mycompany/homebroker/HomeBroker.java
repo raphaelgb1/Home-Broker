@@ -120,14 +120,32 @@ public class HomeBroker {
                     
                 case 3:
                     String auxMenuClienteView = "";
+                    int verify = clienteController.verifyHaveOnlyAdm(vetorCliente);
+                    if(verify > 1) {
+                        
                         for (ClienteDAO element : vetorCliente) {
                             if(element != null && element.adm == false){
-                                auxMenuClienteView += "Id: " + element.id + "-  Cliente: " + element.nome + "\n";
+                                auxMenuClienteView += "Id: " + element.id + " -  Cliente: " + element.nome + "\n";
                             }                      
                         }
-                    int idViewCliente = Integer.parseInt(JOptionPane.showInputDialog(auxMenuClienteView));
-                    ClienteDAO clienteView = clienteController.returnObjectById(idViewCliente, vetorCliente);
-                    JOptionPane.showMessageDialog(null,"Id: "+clienteView.id +"Nome: "+clienteView.nome);
+                        int idViewCliente = Integer.parseInt(JOptionPane.showInputDialog(auxMenuClienteView));
+                        ClienteDAO clienteView = clienteController.returnObjectById(idViewCliente, vetorCliente);
+                        String clienteViewText = "Id: "+clienteView.id 
+                                                +"\nNome: "+clienteView.nome
+                                                +"\nLogin: "+clienteView.login
+                                                +"\nSenha: "+clienteView.senha
+                                                +"\nCPF: "+clienteView.CPF
+                                                +"\nTelefone: "+clienteView.telefone
+                                                +"\nData de Criação: "+clienteView.dataCriacao;
+                        clienteViewText += (clienteView.dataModificacao == null) ? "\nData de Modificação: Sem Modificação" 
+                                : "\nData de Modificação: " + clienteView.dataModificacao;
+                        clienteViewText += (clienteView.adm == false) ? "\nAdministrador: Não" : "\nAdministrador: Sim";
+                        JOptionPane.showMessageDialog(null,clienteViewText);
+                    } else if(verify == 1) {
+                        JOptionPane.showMessageDialog(null,"Não há clientes cadastrados");
+                    } else {
+                        JOptionPane.showMessageDialog(null,"Ocorreu um erro ao buscar clientes");
+                    }
 
                     break;
                     
@@ -175,13 +193,18 @@ public class HomeBroker {
                                 ClienteDAO clienteViewConta = clienteController.returnObjectById(contaView.cliente, vetorCliente);
                                 String internView = "   Cliente\n" + clienteViewConta.nome + "\nSaldo: " + contaView.saldo + "\nData de Criação: " + contaView.dataCriacao;
                                 internView += (clienteViewConta.dataModificacao != null) ?  "\nÚltima Modificação: " + clienteViewConta.dataModificacao : "";
-                                
+                                JOptionPane.showMessageDialog(null,internView);
                             break;
                         }
                     } while(opConta != 4);
                     break;
+                    
+                    case 6:
+                        op = Integer.parseInt(JOptionPane.showInputDialog("Você Quer Sair?\n 1 - Sim\n 2 - Não"));
+                        op = (op == 1) ? 6 : 1;
+                    break;
             } 
         } while (op != 6);
-        JOptionPane.showMessageDialog(null, "Usuário Deslogado");
+        JOptionPane.showMessageDialog(null, "Sessão Encerrada");
     }
 }
