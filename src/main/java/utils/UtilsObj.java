@@ -18,4 +18,17 @@ public class UtilsObj {
         }
         return count;
     }
+    
+    public int verifyObjectIsVoid (Object[] vetor) {
+        try {
+             for (Object obj : vetor) {
+                if(obj != null) {
+                    return 0;
+                }                      
+            }
+            return 1;
+        } catch (Exception err) {
+            return -1;
+        }
+    }
 }

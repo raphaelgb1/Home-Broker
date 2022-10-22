@@ -68,4 +68,17 @@ public class ClienteController extends CrudController {
             return -1;
         }
     }
+    
+    public ClienteDAO verifyUserName (ClienteDAO[] vetor, String name) {
+        try {
+            for (ClienteDAO element : vetor) {
+                if(element.login.hashCode() == name.hashCode()){
+                    return element;
+                }
+            }
+            return null;
+        } catch (Exception err) {
+            return null;
+        }
+    }
 }

@@ -12,12 +12,12 @@ import dao.CrudDAO;
  */
 public class CrudController {
     
-    CrudDAO utils = new CrudDAO();
+    CrudDAO crudDAO = new CrudDAO();
     
     public boolean insert (Object obj, Object[] vetor) {
         try {
-            int indice = utils.verificar(vetor);
-            utils.insert(vetor, obj, indice);
+            int indice = crudDAO.verificar(vetor);
+            crudDAO.insert(vetor, obj, indice);
             return true;
         } catch (Exception err) {
             return false;
@@ -26,7 +26,7 @@ public class CrudController {
     
     public boolean update (Object newObj, Object[] vetor, int indice) {
         try {
-            utils.insert(vetor, newObj, indice);
+            crudDAO.insert(vetor, newObj, indice);
             return true;
         } catch (Exception err) {
             return false;  
@@ -35,10 +35,18 @@ public class CrudController {
     
     public boolean delete (int indice, Object[] vetor) {
         try {
-            utils.delete(vetor, indice);
+            crudDAO.delete(vetor, indice);
             return true;
         } catch (Exception err) {
             return false;  
         }
     }
+    
+//    public boolean read (Object[] vetor, Object obj) {
+//        try {
+//            return crudDAO.read(vetor,obj);
+//        } catch (Exception err) {
+//            return false;
+//        }
+//    }
 }

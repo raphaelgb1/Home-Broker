@@ -10,7 +10,7 @@ package dao;
  */
 public class CrudDAO {
     
-    public int verificar (Object vetor[]) {
+    public int verificar (Object[] vetor) {
         try {
             for(int x = 0; x < vetor.length; x++){
                 if(vetor[x] == null){
@@ -24,7 +24,7 @@ public class CrudDAO {
         
     }
     
-    public boolean insert (Object vetor[], Object obj, int indice) {
+    public boolean insert (Object[] vetor, Object obj, int indice) {
          try {
             vetor[indice] = obj;   
             return true;
@@ -33,7 +33,7 @@ public class CrudDAO {
         }
     }
     
-    public boolean delete (Object vetor[], int indice) {
+    public boolean delete (Object[] vetor, int indice) {
         try {
             vetor[indice] = null;   
             return true;
@@ -41,5 +41,18 @@ public class CrudDAO {
             return false;
         }
     }
+    
+//    public boolean read (Object[] vetor, Object obj){
+//        try {
+//            for (Object element : vetor) {
+//                if(element.hashCode() == obj.hashCode()){
+//                    return true;
+//                }
+//            }
+//            return false;
+//        } catch (Exception e) {
+//            return false;
+//        }
+//    }
 }
 
