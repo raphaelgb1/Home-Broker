@@ -14,10 +14,10 @@ public class ContaDAO {
     public int id;
     public int cliente;
     public double saldo;
-    public Date dataCriacao;
-    public Date dataModificacao;
+    public String dataCriacao;
+    public String dataModificacao;
     
-    public void newData (int id, int cliente, double saldo, Date dataCriacao, Date dataModificacao) {
+    public void newData (int id, int cliente, double saldo, String dataCriacao, String dataModificacao) {
         this.id = id;
         this.cliente = cliente;
         this.saldo = saldo;

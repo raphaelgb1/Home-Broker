@@ -31,7 +31,22 @@ public class ContaController extends CrudController {
         try {
             for (ContaDAO obj : vetor) {
                 if(obj != null) {
-                    if(obj.cliente == id){
+                    if(obj.id == id){
+                        return obj;
+                    }
+                }                      
+            }
+            return null;
+        } catch (Exception err) {
+            return null;
+        }
+    }
+    
+    public ContaDAO returnContaByCliente (int cliente, ContaDAO[] vetor) {
+        try {
+            for (ContaDAO obj : vetor) {
+                if(obj != null) {
+                    if(obj.cliente == cliente){
                         return obj;
                     }
                 }                      

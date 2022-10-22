@@ -19,12 +19,12 @@ public class ClienteDAO {
     public String login;
     public String senha;
     public boolean adm;
-    public Date dataCriacao;
-    public Date dataModificacao;
+    public String dataCriacao;
+    public String dataModificacao;
     
     public void newData (int id, String nome, String endereco, 
             String CPF, String telefone, String login, String senha, 
-            boolean adm, Date dataCriacao, Date dataModificacao) {
+            boolean adm, String dataCriacao, String dataModificacao) {
         this.id = id;
         this.nome = nome;
         this.endereco = endereco;
