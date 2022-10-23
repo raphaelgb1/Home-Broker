@@ -11,17 +11,21 @@ package dao;
 public class OperacoesContaDAO {
     public int id;
     public int conta;
+    public int contaTransferencia;
     public int operacao;//1 - Crédito, 2 - Débito
-    public int tipo;//1 - Depósito, 2 - Saque, 3 - Transferência, 4 - Pagamento
+    public double saldoFinal;
+    public int tipo;//1 - Depósito, 2 - Saque, 3 - Transferência, 4 - Pagamento, 5 - Recebimento
     public String descricao;
     public double valor;
     public String dataCriacao;
     public String dataModificacao;
     
-    public void newData (int id, int conta, int operacao, int tipo, String descricao, double valor, String dataCriacao, String dataModificacao) {
+    public void newData (int id, int conta, int contaTransferencia, int operacao, double saldoFinal, int tipo, String descricao, double valor, String dataCriacao, String dataModificacao) {
         this.id = id;
         this.conta = conta;
+        this.contaTransferencia = contaTransferencia;
         this.operacao = operacao;
+        this.saldoFinal = saldoFinal;
         this.tipo = tipo;
         this.descricao = descricao;
         this.valor = valor;
