@@ -50,6 +50,8 @@ public class HomeBroker {
         int idConta = 0;
         int idOperacoesConta = 0;
         
+        boolean verificador = false;
+        
         String verifySenha = "";
         String menuADM = "1 - Adicionar Usuario\n2 - Editar Usuario\n3 - Mostrar Cadastros\n4 - Excluir Usuário\n5 - Conta\n6 - Incrementar Dias\n0 - Sair\n\nDigite uma opção";
         String menuCOM = "1 - Perfil\n2 - Conta\n3 - Ativos\n4 - Ordem\n5 - Incrementar Dias\n0 - Sair\n\nDigite uma opção";
@@ -413,19 +415,34 @@ public class HomeBroker {
                         ContaDAO conta = contaController.returnContaByCliente(user.id, vetorConta);
                         JOptionPane.showMessageDialog(null, "Bem vindo " + user.nome + "!");
                         do{
+                            String dataAtualStr = formatDate.format(calendario.getTime());
+                            
                             //ROTINA DE COBRANÇA DE TAXA DE MANUTENÇÃO
-                            Date dataAux = calendario.getTime();
-                            String dataAtualStr = formatDate.format(dataAux);
-                            if(dataAux.after(dataAtual)){
-                                dataAtual = dataAux;
-                                if(calendario.get(calendario.DAY_OF_MONTH)== 15 || calendario.get(calendario.DAY_OF_MONTH) > 15) {
+                            if(calendario.get(calendario.DAY_OF_MONTH)== 15) {
+                                boolean verifyPayment = true;
+                                for (OperacoesContaDAO element : vetorOperacoesConta) {
+                                    if(element != null){
+                                        Date auxDate = format.parse(element.dataCriacao);
+                                        if(formatDate.format(auxDate).hashCode() == formatDate.format(calendario.getTime()).hashCode() 
+                                            && element.tipo == 4 && element.valor == 20.0 && element.conta == conta.id
+                                            && element.contaTransferencia == 1){
+                                            verifyPayment = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if(verifyPayment){
                                     boolean taxa = cobrancaDeTaxa.cobrarTaxa(vetorConta, conta, idOperacoesConta, vetorOperacoesConta, calendario);
                                     if(taxa){
                                         JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
                                     } else {
                                         JOptionPane.showMessageDialog(null, "Ocorreu um erro ao debitar taxa");
-                                    }
+                                    }       
                                 }
+                            }
+                            
+                            if(verificador){
+                                menuCOMConta = "Saldo: " + conta.saldo + "\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
                             }
                             
                             op =  Integer.parseInt(JOptionPane.showInputDialog(dataAtualStr + "\n" + user.nome + "\n\n"+menuCOM));
@@ -483,9 +500,6 @@ public class HomeBroker {
                                     break;
 
                                 case 2://CONTA
-                                    boolean verificador = false;
-                                    
-
                                     int opCOMConta = 1;
                                     do {               
                                         opCOMConta = Integer.parseInt(JOptionPane.showInputDialog(menuCOMConta));
@@ -514,8 +528,7 @@ public class HomeBroker {
                                                                     pagador = clienteController.returnObjectById(element.contaTransferencia, vetorCliente);
                                                                 }
                                                                 Date dtExtrato = format.parse(element.dataCriacao);
-                                                                if(dtExtrato.before(dtfinal) && dtExtrato.after(dtinicio));
-                                                                {
+                                                                if(dtExtrato.before(dtfinal) && dtExtrato.after(dtinicio)){
                                                                     extrato += (element.operacao == 1) ? "Saida\n" : "Entrada\n";
                                                                     extrato += (element.tipo == 5) ? "Recebido de: " + pagador.nome + "\n" : "";
                                                                     extrato += (element.tipo == 3) ? "Enviado para: " + pagador.nome + "\n" : "";
@@ -632,7 +645,7 @@ public class HomeBroker {
                                                 break;
 
                                                 case 4://SAQUE
-                                                    int opSaque = Integer.parseInt(JOptionPane.showInputDialog("Quanto deseja depositar?\n\n0 - Voltar\nDigite uma opção")); 
+                                                    int opSaque = Integer.parseInt(JOptionPane.showInputDialog("Quanto deseja sacar?\n\n0 - Voltar\nDigite uma opção")); 
                                                     do{
                                                         if(opSaque == 0){
                                                             break;
@@ -708,7 +721,18 @@ public class HomeBroker {
                                              incrementDays = 30;
                                         break;
                                      }
-                                    calendario.add(GregorianCalendar.DAY_OF_MONTH, incrementDays);
+                                     
+                                     for(int x = 0; x < incrementDays; x++){
+                                        calendario.add(GregorianCalendar.DAY_OF_MONTH, 1);
+                                        if(calendario.get(calendario.DAY_OF_MONTH)== 15) {
+                                            boolean taxa = cobrancaDeTaxa.cobrarTaxa(vetorConta, conta, idOperacoesConta, vetorOperacoesConta, calendario);
+                                            if(taxa){
+                                                JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
+                                            } else {
+                                                JOptionPane.showMessageDialog(null, "Ocorreu um erro ao debitar taxa");
+                                            }
+                                        }
+                                     }
                                 break;
                             } 
                         } while (op != 0);
