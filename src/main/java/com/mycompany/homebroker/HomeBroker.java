@@ -53,9 +53,9 @@ public class HomeBroker {
         boolean verificador = false;
         
         String verifySenha = "";
-        String menuADM = "1 - Adicionar Usuario\n2 - Editar Usuario\n3 - Mostrar Cadastros\n4 - Excluir Usuário\n5 - Conta\n6 - Incrementar Dias\n0 - Sair\n\nDigite uma opção";
+        String menuADM = "1 - Adicionar Usuario\n2 - Editar Usuario\n3 - Mostrar Cadastros\n4 - Excluir Usuário\n5 - Conta\n6 - Incrementar Dias\n\n0 - Sair\nDigite uma opção";
         String menuCOM = "1 - Perfil\n2 - Conta\n3 - Ativos\n4 - Ordem\n5 - Incrementar Dias\n0 - Sair\n\nDigite uma opção";
-        String menuADMConta = "1 - Visualizar Informações da Conta\n2 - Editar Conta\n3 - Excluir Conta\n0 - Voltar\n\nDigite Uma Opção";
+        String menuADMConta = "1 - Visualizar Informações da Conta\n2 - Editar Conta\n\n0 - Voltar\nDigite Uma Opção";
         String menuCOMPerfil = "1 - Visualizar Perfil\n2 - Editar Perfil\n\n0 - Voltar\nDigite uma opção";
         String menuCOMConta = "Saldo: ------\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Mostrar Saldo\n\n0 - Voltar\nDigite uma opção";
         String auxMenu = menuCOMConta;
@@ -288,7 +288,11 @@ public class HomeBroker {
                                             if(indice >= 0) {
                                                     verifySenha = JOptionPane.showInputDialog("Confirme a senha do Administrador");
                                                     if(verifySenha.hashCode() == user.senha.hashCode()){
-                                                        if(clienteController.delete(indice, vetorCliente)){
+                                                        
+                                                        ContaDAO contaDel = contaController.returnContaByCliente(idDelete, vetorConta);
+                                                        int indiceConta = contaController.returnIndex(contaDel.id, vetorConta);
+
+                                                        if(contaController.delete(indiceConta, vetorConta) && clienteController.delete(indice, vetorCliente)){
                                                            JOptionPane.showMessageDialog(null,"Usuário Excluído");
                                                         } else {
                                                             JOptionPane.showMessageDialog(null,"Ocorreu um erro durante a exclusão"); 
