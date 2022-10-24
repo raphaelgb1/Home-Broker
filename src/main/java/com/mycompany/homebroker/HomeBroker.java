@@ -670,7 +670,7 @@ public class HomeBroker {
                                                     }while(opSaque != 0);
                                                 break;
 
-                                                case 5:
+                                                case 5://MOSTRAR SALDO
                                                     verificador = (verificador == true) ? false : true;
                                                     String auxSaldo = "Saldo: " + conta.saldo + "\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
                                                     if(verificador){
@@ -687,95 +687,12 @@ public class HomeBroker {
 
                                     break;
 
-                                case 3://ATIVOS
-
-                                    do{
-                                        String auxMenuClienteView = "";
-                                        verify = clienteController.verifyHaveOnlyAdm(vetorCliente);
-                                        if(verify > 1) {
-
-                                            for (ClienteDAO element : vetorCliente) {
-                                                if(element != null){
-                                                    auxMenuClienteView += "Id: " + element.id + " -  Cliente: " + element.nome + "\n";
-                                                }                      
-                                            }
-
-                                            int idViewCliente = Integer.parseInt(JOptionPane.showInputDialog(auxMenuClienteView + "\n0 - Voltar\nDigite uma opção"));
-                                            if (idViewCliente == 0) {
-                                                    opView = 1;
-                                                    break;
-                                                }
-                                            ClienteDAO clienteView = clienteController.returnObjectById(idViewCliente, vetorCliente);
-                                            if(clienteView != null){
-                                                String clienteViewText = "Id: "+clienteView.id 
-                                                                        +"\nNome: "+clienteView.nome
-                                                                        +"\nLogin: "+clienteView.login
-                                                                        +"\nSenha: "+clienteView.senha
-                                                                        +"\nCPF: "+clienteView.CPF
-                                                                        +"\nTelefone: "+clienteView.telefone
-                                                                        +"\nData de Criação: "+clienteView.dataCriacao;
-                                                clienteViewText += (clienteView.dataModificacao == null) ? "\nData de Modificação: Sem Modificação" 
-                                                        : "\nData de Modificação: " + clienteView.dataModificacao;
-                                                clienteViewText += (clienteView.adm == false) ? "\nAdministrador: Não" : "\nAdministrador: Sim";
-                                                JOptionPane.showMessageDialog(null,clienteViewText);          
-                                            } else {
-                                                JOptionPane.showMessageDialog(null,"Nenhum cliente encontrado");
-                                            }
-                                        } else if(verify == 1) {
-                                            JOptionPane.showMessageDialog(null,"Não há clientes cadastrados");
-                                        } else {
-                                            JOptionPane.showMessageDialog(null,"Ocorreu um erro ao buscar clientes");
-                                        }
-                                    }while(opView != 0);
-
+                                case 3://ATIVOS****************************************
+   
                                     break;
 
-                                case 4://ORDEM
-                                    do {
-                                        verify = clienteController.verifyHaveOnlyAdm(vetorCliente);
-                                        if(verify > 1) {         
-                                            String auxMenuClienteDel = "";
-                                            for (ClienteDAO element : vetorCliente) {
-                                                if(element != null && element.adm == false){
-                                                    auxMenuClienteDel += "Id: " + element.id + "-  Cliente: " + element.nome + "\n";
-                                                }                      
-                                            }
-                                            int idDelete = Integer.parseInt(JOptionPane.showInputDialog(auxMenuClienteDel + "\n0 - Voltar\nDigite o Id do Usuário"));
-                                            if(idDelete == 1){
-                                                JOptionPane.showMessageDialog(null, "Não é possível excluir usuário Administrador");
-                                                break;
-                                            } else if (idDelete == 0) {
-                                                opDelete = 1;
-                                                break;
-                                            }
-
-                                            int indice = clienteController.returnIndex(idDelete, vetorCliente);
-                                            if(indice >= 0) {
-                                                    verifySenha = JOptionPane.showInputDialog("Confirme a senha do Administrador");
-                                                    if(verifySenha.hashCode() == vetorCliente[0].senha.hashCode()){
-                                                        if(clienteController.delete(indice, vetorCliente)){
-                                                           JOptionPane.showMessageDialog(null,"Usuário Excluído");
-                                                        } else {
-                                                            JOptionPane.showMessageDialog(null,"Ocorreu um erro durante a exclusão"); 
-                                                        }
-                                                        opDelete = 1;
-                                                    } else {
-                                                        JOptionPane.showMessageDialog(null,"Senha Inválida");
-                                                    }
-                                            } else {
-                                                if(indice == -1) {
-                                                    JOptionPane.showMessageDialog(null,"Usuário não encontrado");
-                                                } else {
-                                                    JOptionPane.showMessageDialog(null,"Ocorreu um erro durante a atualização"); 
-                                                }
-                                            }
-                                        } else {
-                                            JOptionPane.showMessageDialog(null,"Não há clientes cadastrados");
-                                            opDelete = 1;
-                                        }
-                                    } while(opDelete != 1);
-                                    break;
-
+                                case 4://ORDEM****************************************
+                                   
                                  case 5://INCREMENTAR DIAS
                                     int incrementDays = Integer.parseInt(JOptionPane.showInputDialog("Quantos dias deseja incrementar\n"
                                             + "\n1 - 1 Dia\n2 - 7 Dias\n3 - 15 Dias\n4 - 30\n\n0 - Voltar\nDigite uma opção"));
