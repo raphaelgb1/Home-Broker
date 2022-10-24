@@ -69,7 +69,7 @@ public class HomeBroker {
 //CRIACÃO USUÁRIO PROVISÓRIO PARA TESTES
         idCliente++;
         ClienteDAO clienteUser = new ClienteDAO();
-        clienteUser.newData(idCliente, "user", "user", "user", "user", "user", "user", false, format.format(calendario.getTime()), null);
+        clienteUser.newData(idCliente, "Igor Ramalho", "user", "user", "user", "user", "user", false, format.format(calendario.getTime()), null);
         clienteController.insert(clienteUser, vetorCliente);  
         ContaDAO newContaUser = new ContaDAO();
         newContaUser.newData(++idConta, clienteUser.id, 520000.00, format.format(calendario.getTime()), null);
@@ -112,7 +112,7 @@ public class HomeBroker {
                             if(dataAux.after(dataAtual)){
                                 dataAtual = dataAux;
                                 if(calendario.get(calendario.DAY_OF_MONTH)== 15 || calendario.get(calendario.DAY_OF_MONTH) > 15) {
-                                    boolean taxa = cobrancaDeTaxa.cobrarTaxa(vetorConta, null, idOperacoesConta, vetorOperacoesConta);
+                                    boolean taxa = cobrancaDeTaxa.cobrarTaxa(vetorConta, null, idOperacoesConta, vetorOperacoesConta, calendario);
                                     if(taxa){
                                         JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
                                     } else {
@@ -177,11 +177,11 @@ public class HomeBroker {
                                                     if(verifySenha.hashCode() == user.senha.hashCode()){//VERIFICAR SENHA
                                                         int indice = clienteController.returnIndex(clienteUdpdate.id, vetorCliente); 
                                                         String nameUpdate   = JOptionPane.showInputDialog("Nome: "     + clienteUdpdate.nome + "\n\nDigite novo Nome");
-                                                        String userUpdate   = JOptionPane.showInputDialog("Usuário: "  + clienteUdpdate.nome +"\n\nDigite novo Usuário");
-                                                        String passUpdate   = JOptionPane.showInputDialog("Senha: "    + clienteUdpdate.nome +"\n\nEscolha nova Senha");
-                                                        String adressUpdate = JOptionPane.showInputDialog("Endereço: " + clienteUdpdate.nome +"\n\nDigite novo Endereço");
-                                                        String cpfUpdate    = JOptionPane.showInputDialog("CPF: "      + clienteUdpdate.nome +"\n\nDigite novo CPF");
-                                                        String phoneUpdate  = JOptionPane.showInputDialog("Telefone: " + clienteUdpdate.nome +"\n\nDigite novo Telefone");
+                                                        String userUpdate   = JOptionPane.showInputDialog("Usuário: "  + clienteUdpdate.login +"\n\nDigite novo Usuário");
+                                                        String passUpdate   = JOptionPane.showInputDialog("Senha: "    + clienteUdpdate.senha +"\n\nEscolha nova Senha");
+                                                        String adressUpdate = JOptionPane.showInputDialog("Endereço: " + clienteUdpdate.endereco +"\n\nDigite novo Endereço");
+                                                        String cpfUpdate    = JOptionPane.showInputDialog("CPF: "      + clienteUdpdate.CPF +"\n\nDigite novo CPF");
+                                                        String phoneUpdate  = JOptionPane.showInputDialog("Telefone: " + clienteUdpdate.telefone +"\n\nDigite novo Telefone");
                                                         String update       = format.format(calendario.getTime());
                                                         ClienteDAO newObj   = new ClienteDAO();
                                                         newObj.newData(idUpdate, nameUpdate, adressUpdate, cpfUpdate, phoneUpdate, userUpdate, passUpdate, false, clienteUdpdate.dataCriacao, update);
@@ -419,7 +419,7 @@ public class HomeBroker {
                             if(dataAux.after(dataAtual)){
                                 dataAtual = dataAux;
                                 if(calendario.get(calendario.DAY_OF_MONTH)== 15 || calendario.get(calendario.DAY_OF_MONTH) > 15) {
-                                    boolean taxa = cobrancaDeTaxa.cobrarTaxa(vetorConta, conta, idOperacoesConta, vetorOperacoesConta);
+                                    boolean taxa = cobrancaDeTaxa.cobrarTaxa(vetorConta, conta, idOperacoesConta, vetorOperacoesConta, calendario);
                                     if(taxa){
                                         JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
                                     } else {
@@ -495,7 +495,7 @@ public class HomeBroker {
                                             switch (opCOMConta) {
                                                 case 0:
                                                 break;
-                                                case 1:
+                                                case 1://EXTRATO
                                                     int opExtrato = 1;
                                                     String extrato = "";
                                                     do{

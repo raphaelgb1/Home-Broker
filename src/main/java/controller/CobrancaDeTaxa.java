@@ -6,7 +6,8 @@ package controller;
 
 import dao.ContaDAO;
 import dao.OperacoesContaDAO;
-import javax.swing.JOptionPane;
+import java.text.SimpleDateFormat;
+import java.util.GregorianCalendar;
 
 /**
  *
@@ -16,8 +17,9 @@ public class CobrancaDeTaxa {
     
     ContaController contaController = new ContaController();
     OperacoesContaController operacoesContaController = new OperacoesContaController();
+    SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
     
-    public boolean cobrarTaxa (ContaDAO[] vetorConta, ContaDAO conta, int idOperacoesConta, OperacoesContaDAO[] vetorOperacoesConta) {
+    public boolean cobrarTaxa (ContaDAO[] vetorConta, ContaDAO conta, int idOperacoesConta, OperacoesContaDAO[] vetorOperacoesConta, GregorianCalendar calendario) {
         try {           
             for (ContaDAO element : vetorConta) {
                 if(element != null) {    
@@ -34,13 +36,13 @@ public class CobrancaDeTaxa {
                         OperacoesContaDAO userOperacao = new OperacoesContaDAO();
                         userOperacao.newData(++idOperacoesConta, element.id, vetorConta[0].id
                                 , 1, userResult, 4, "Taxa de Manutenção"
-                                , 20, element.dataCriacao, element.dataModificacao);
+                                , 20, format.format(calendario.getTime()), "");
                         boolean userOp = operacoesContaController.insert(userOperacao, vetorOperacoesConta);
 
                         OperacoesContaDAO admOperacao = new OperacoesContaDAO();
                         admOperacao.newData(++idOperacoesConta, vetorConta[0].id, element.id
                                 , 2, admResult, 5, "Taxa de Manutenção"
-                                , 20, vetorConta[0].dataCriacao, vetorConta[0].dataModificacao);
+                                , 20, format.format(calendario.getTime()), "");
                         boolean admOp = operacoesContaController.insert(admOperacao, vetorOperacoesConta);
                         if(userOp && admOp) {
                             if(conta != null){
