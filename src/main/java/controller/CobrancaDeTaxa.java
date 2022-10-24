@@ -22,7 +22,7 @@ public class CobrancaDeTaxa {
     public boolean cobrarTaxa (ContaDAO[] vetorConta, ContaDAO conta, int idOperacoesConta, OperacoesContaDAO[] vetorOperacoesConta, GregorianCalendar calendario) {
         try {           
             for (ContaDAO element : vetorConta) {
-                if(element != null) {    
+                if(element != null && element.id != 1) {    
                     int indice = contaController.returnIndex(element.id, vetorConta);
                     double userResult = operacoesContaController.depositoSaque(element.saldo, 20, false);
                     double admResult = operacoesContaController.depositoSaque(vetorConta[0].saldo, 20, true);
