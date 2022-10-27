@@ -9,16 +9,21 @@ import controller.ClienteController;
 import controller.CobrancaDeTaxa;
 import controller.ContaController;
 import controller.OperacoesContaController;
+import dao.AtivosDAO;
 import dao.ClienteDAO;
 import dao.ContaDAO;
 import dao.OperacoesContaDAO;
+import dao.OrdemDAO;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Scanner;
+
+import javax.lang.model.util.ElementScanner14;
 import javax.swing.JOptionPane;
 import utils.UtilsObj;
-
+import dao.bookDAO;
 /**
  *
  * @author rapha
@@ -39,12 +44,16 @@ public class HomeBroker {
         SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy");
         GregorianCalendar calendario = new GregorianCalendar();
 
+        bookDAO book = new bookDAO();
+        book.newData(formatDate.format(calendario.getTime()));
+
         int op = 0;
         int opUser = 0;
         int opView = 0;
         int opDelete = 0;
         int opUpdate = 0;
         int verify = 0;
+        int idOrdem = 0;
         
         int idCliente = 1;
         int idConta = 0;
@@ -54,7 +63,7 @@ public class HomeBroker {
         
         String verifySenha = "";
         String menuADM = "1 - Adicionar Usuario\n2 - Editar Usuario\n3 - Mostrar Cadastros\n4 - Excluir Usuário\n5 - Conta\n6 - Incrementar Dias\n\n0 - Sair\nDigite uma opção";
-        String menuCOM = "1 - Perfil\n2 - Conta\n3 - Ativos\n4 - Ordem\n5 - Incrementar Dias\n0 - Sair\n\nDigite uma opção";
+        String menuCOM = "1 - Perfil\n2 - Conta\n3 - Ativos\n4 - Ordem de Compra\\Venda\n5 - Incrementar Dias\n0 - Sair\n\nDigite uma opção";
         String menuADMConta = "1 - Visualizar Informações da Conta\n2 - Editar Conta\n\n0 - Voltar\nDigite Uma Opção";
         String menuCOMPerfil = "1 - Visualizar Perfil\n2 - Editar Perfil\n\n0 - Voltar\nDigite uma opção";
         String menuCOMConta = "Saldo: ------\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Mostrar Saldo\n\n0 - Voltar\nDigite uma opção";
@@ -430,6 +439,9 @@ public class HomeBroker {
                                         }
                                      }
                                 break;
+                                case 7://dividendos
+                                     
+                                break;
                             } 
                         } while (op != 0);
                         JOptionPane.showMessageDialog(null, "Sessão Encerrada");
@@ -727,12 +739,35 @@ public class HomeBroker {
                                     break;
 
                                 case 3://ATIVOS****************************************
-   
+                                        JOptionPane.showMessageDialog(null, book.Ativos_book());
                                     break;
 
                                 case 4://ORDEM****************************************
-                                   
-                                 case 5://INCREMENTAR DIAS
+                                    OrdemDAO Ordem = new OrdemDAO(idOrdem++);
+                                    int tipo_Ordem;
+                                    int qtd;
+                                    int id_Ordem = Integer.parseInt(JOptionPane.showInputDialog(book.Ativos_book() + "\n\nQual \"ID\" do ativo:"));
+                                    // Ordem.setId(idOrdem++);
+                                    Ordem.setAtivo(book.getAtivo(id_Ordem));
+                                    Ordem.setConta(conta);
+                                    do {
+                                        tipo_Ordem = Integer.parseInt(JOptionPane.showInputDialog("Qual tipo de Ordem:\n"
+                                        + "\n0 - Ordem 0\n1 - Compra\n2 - Venda \n"));
+                                    } while (tipo_Ordem < 0 || tipo_Ordem > 2);
+                                    Ordem.settipo_ordem(tipo_Ordem);
+                                    Ordem.getAtivo().setPreço_inicial(Double.parseDouble(JOptionPane.showInputDialog("Preço para " + (tipo_Ordem == 2 ? "Venda" : "Compra"))));
+                                    Ordem.getAtivo().setQuantidade(Integer.parseInt(JOptionPane.showInputDialog("Quantidade de Ativos a compra")));
+                                    Ordem.getAtivo().setDataCriacao(format.format(calendario.getTime()));
+                                    Ordem.getAtivo().setDataModificacao(format.format(calendario.getTime()));
+                                    if(tipo_Ordem != 0){
+                                        if(book.Cadastro_Ordem(Ordem))
+                                                JOptionPane.showMessageDialog(null, "Ordem enviada com sucesso " + user.nome + "!");
+                                            else
+                                                JOptionPane.showMessageDialog(null, "Erro ao enviada Ordem " + user.nome + "!");
+                                    }
+                                break;
+                                
+                                case 5://INCREMENTAR DIAS
                                     int incrementDays = Integer.parseInt(JOptionPane.showInputDialog("Quantos dias deseja incrementar\n"
                                             + "\n1 - 1 Dia\n2 - 7 Dias\n3 - 15 Dias\n4 - 30\n\n0 - Voltar\nDigite uma opção"));
                                      switch (incrementDays) {
