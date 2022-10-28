@@ -793,29 +793,23 @@ public class HomeBroker {
                                     Ordem.setPendente(false);
                                     
                                     AtivosDAO ativo = Ordem.getAtivo();
-                                    double resultUser = 0;
-                                    double resultBolsa = 0;
                                     double valor = ativo.preço_inicial*ativo.Quantidade;
-                                    ContaDAO pagador = conta;
-                                    ContaDAO recebedor = bolsa;
-                                    
+                                    double resultUser = operacoesContaController.depositoSaque(conta.saldo, valor, false);
+                                    double resultBolsa = operacoesContaController.depositoSaque(bolsa.saldo, valor, true);
 
-                                    resultUser = operacoesContaController.depositoSaque(conta.saldo, valor, false);
-                                    resultBolsa = operacoesContaController.depositoSaque(bolsa.saldo, valor, true);
-
-                                    if(tipo_Ordem == 2) {
-                                        pagador = bolsa;
-                                        recebedor = conta;
-                                        resultUser = operacoesContaController.depositoSaque(conta.saldo, valor, true);
-                                        resultBolsa = operacoesContaController.depositoSaque(bolsa.saldo, valor, false);
-                                    }
+                                    // if(tipo_Ordem == 2) {
+                                    //     pagador = bolsa;
+                                    //     recebedor = conta;
+                                    //     resultUser = operacoesContaController.depositoSaque(conta.saldo, valor, true);
+                                    //     resultBolsa = operacoesContaController.depositoSaque(bolsa.saldo, valor, false);
+                                    // }
 
                                     if(resultUser > 0 && tipo_Ordem == 0) {
                                         if(conta.setSaldo(resultUser) && bolsa.setSaldo(resultBolsa)) {
                                             if(book.Cadastro_Ordem(Ordem)) {
                                                 String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
-                                                idOperacoesConta = operacoesContaController.newOperation(pagador, recebedor, vetorOperacoesConta, idOperacoesConta, descricao, calendario, valor, resultBolsa, true);                     
-                                                JOptionPane.showMessageDialog(null, "Ordem enviada com sucesso ");
+                                                idOperacoesConta = operacoesContaController.newOperation(conta, bolsa, vetorOperacoesConta, idOperacoesConta, descricao, calendario, valor, resultBolsa, true);                     
+                                                JOptionPane.showMessageDialog(null, "Ordem de compra efetuada");
 
                                             } else {
                                                 JOptionPane.showMessageDialog(null, "Erro ao enviada Ordem ");
