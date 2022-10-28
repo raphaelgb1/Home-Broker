@@ -20,10 +20,10 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Scanner;
 
-import javax.lang.model.util.ElementScanner14;
+// import javax.lang.model.util.ElementScanner14;
 import javax.swing.JOptionPane;
 import utils.UtilsObj;
-import dao.bookDAO;
+import dao.BookDAO;
 /**
  *
  * @author rapha
@@ -44,7 +44,7 @@ public class HomeBroker {
         SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy");
         GregorianCalendar calendario = new GregorianCalendar();
 
-        bookDAO book = new bookDAO();
+        BookDAO book = new BookDAO();
         book.newData(formatDate.format(calendario.getTime()));
 
         int op = 0;
@@ -107,6 +107,8 @@ public class HomeBroker {
             if(user != null){
                 String password = JOptionPane.showInputDialog("Insira sua senha");
                 if(user.senha.hashCode() == password.hashCode()){
+
+                    ContaDAO contaAdm = vetorConta[0];
                     
                     if(user.adm) {   
                         //MENU DO USUÁRIO ADMINISTRADOR
@@ -121,7 +123,7 @@ public class HomeBroker {
                                         Date auxDate = format.parse(element.dataCriacao);
                                         if(formatDate.format(auxDate).hashCode() == formatDate.format(calendario.getTime()).hashCode() 
                                             && element.tipo == 4 && element.valor == 20.0
-                                            && element.contaTransferencia == vetorConta[0].id){
+                                            && element.contaTransferencia == contaAdm.id){
                                             verifyPayment = false;
                                             break;
                                         }
@@ -157,12 +159,12 @@ public class HomeBroker {
                                         if (clienteController.insert(newClient, vetorCliente)) {
                                             ContaDAO newConta = new ContaDAO();
 
-                                            double resultAdm = operacoesContaController.depositoSaque(vetorConta[0].saldo, 500000, false);
+                                            double resultAdm = operacoesContaController.depositoSaque(contaAdm.saldo, 500000, false);
                                             double resultUser = operacoesContaController.depositoSaque(0, 500000, true);
                                             newConta.newData(++idConta, idCliente, resultUser+20000, creation, null);
                                             
-                                            vetorConta[0].newData(vetorConta[0].id, vetorConta[0].cliente, resultAdm, vetorConta[0].dataCriacao, vetorConta[0].dataModificacao);
-                                            boolean resultaAdmUpdate = contaController.update(vetorConta[0], vetorConta, 0);
+                                            contaAdm.newData(contaAdm.id, contaAdm.cliente, resultAdm, contaAdm.dataCriacao, contaAdm.dataModificacao);
+                                            boolean resultaAdmUpdate = contaController.update(contaAdm, vetorConta, 0);
                                             boolean resultaUserInsert = contaController.insert(newConta, vetorConta); 
                                             if(resultaUserInsert && resultaAdmUpdate){
                                                 JOptionPane.showMessageDialog (null, "Usuário e Conta Criados");
@@ -451,6 +453,9 @@ public class HomeBroker {
                            
                         //MENU DO USUÁRIO COMUM
                         ContaDAO conta = contaController.returnContaByCliente(user.id, vetorConta);
+                        int indiceConta = contaController.returnIndex(conta.id, vetorConta);
+                        int indiceUser = clienteController.returnIndex(user.id, vetorCliente); 
+
                         JOptionPane.showMessageDialog(null, "Bem vindo " + user.nome + "!");
                         do{
                             String dataAtualStr = formatDate.format(calendario.getTime());
@@ -463,7 +468,7 @@ public class HomeBroker {
                                         Date auxDate = format.parse(element.dataCriacao);
                                         if(formatDate.format(auxDate).hashCode() == formatDate.format(calendario.getTime()).hashCode() 
                                             && element.tipo == 4 && element.valor == 20.0 && element.conta == conta.id
-                                            && element.contaTransferencia == vetorConta[0].id){
+                                            && element.contaTransferencia == contaAdm.id){
                                             verifyPayment = false;
                                             break;
                                         }
@@ -513,7 +518,7 @@ public class HomeBroker {
                                             case 2://EDITAR PERFIL
                                                 verifySenha = JOptionPane.showInputDialog("Confirme sua senha");
                                                 if(verifySenha.hashCode() == user.senha.hashCode()){//VERIFICAR SENHA
-                                                    int indice = clienteController.returnIndex(user.id, vetorCliente); 
+                                                    
                                                     String nameUpdate   = JOptionPane.showInputDialog("Nome: "     + user.nome + "\n\nDigite novo Nome");
                                                     String userUpdate   = JOptionPane.showInputDialog("Usuário: "  + user.login +"\n\nDigite novo Usuário");
                                                     String passUpdate   = JOptionPane.showInputDialog("Senha: "    + user.senha +"\n\nEscolha nova Senha");
@@ -521,10 +526,8 @@ public class HomeBroker {
                                                     String cpfUpdate    = JOptionPane.showInputDialog("CPF: "      + user.CPF +"\n\nDigite novo CPF");
                                                     String phoneUpdate  = JOptionPane.showInputDialog("Telefone: " + user.telefone +"\n\nDigite novo Telefone");
                                                     String update       = format.format(calendario.getTime());
-                                                    ClienteDAO newObj   = new ClienteDAO();
-                                                    newObj.newData(user.id, nameUpdate, adressUpdate, cpfUpdate, phoneUpdate, userUpdate, passUpdate, false, user.dataCriacao, update);
-                                                    if(clienteController.update(newObj, vetorCliente, indice)){
-                                                        user = vetorCliente[indice];
+                                                    user.newData(user.id, nameUpdate, adressUpdate, cpfUpdate, phoneUpdate, userUpdate, passUpdate, false, user.dataCriacao, update);
+                                                    if(clienteController.update(user, vetorCliente, indiceUser)){
                                                        JOptionPane.showMessageDialog(null,"Atualizado");
                                                     } else {
                                                         JOptionPane.showMessageDialog(null,"Ocorreu um erro durante a atualização"); 
@@ -598,31 +601,29 @@ public class HomeBroker {
                                                         int valorTransferencia = Integer.parseInt(JOptionPane.showInputDialog("Quanto deseja transferir?\n\n0 - Voltar\nDigite uma opção"));
                                                         verifySenha = JOptionPane.showInputDialog("Confirme sua senha");
                                                         if(verifySenha.hashCode() == user.senha.hashCode()){//VERIFICAR SENHA
+
                                                             double resultUser = operacoesContaController.depositoSaque(conta.saldo, valorTransferencia, false);
                                                             double resultDE = operacoesContaController.depositoSaque(contaDE.saldo, valorTransferencia, true);
+                                                            
                                                             if(resultUser != -1 && resultDE != -1){
                                                                 if(resultUser > 0){
                                                                     String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
-                                                                    ContaDAO contaUser = new ContaDAO();
-                                                                    int indiceUser = contaController.returnIndex(conta.id, vetorConta);
+
                                                                     int indiceDE = contaController.returnIndex(contaDE.id, vetorConta);
-                                                                    contaUser.newData(conta.id, conta.cliente, resultUser, conta.dataCriacao, conta.dataModificacao);
+                                                                    conta.newData(conta.id, conta.cliente, resultUser, conta.dataCriacao, conta.dataModificacao);
                                                                     contaDE.newData(contaDE.id, contaDE.cliente, resultDE, contaDE.dataCriacao, contaDE.dataModificacao);
 
-                                                                    boolean contaResult = contaController.update(contaUser, vetorConta, indiceUser);
+                                                                    boolean contaResult = contaController.update(conta, vetorConta, indiceUser);
                                                                     boolean contaResultDE = contaController.update(contaDE, vetorConta, indiceDE);
+
                                                                     if(contaResult && contaResultDE) {
-                                                                        conta = contaUser;
                                                                         if(verificador){
                                                                             menuCOMConta = "Saldo: " + conta.saldo + "\n1 - Extrato\n2 - Pagamento\n3 - Tranferência\n4 - Depósito\n5 - Saque\n6 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
                                                                         }
-                                                                        OperacoesContaDAO pagadorOperacao = new OperacoesContaDAO();
-                                                                        OperacoesContaDAO recebedorOperacao = new OperacoesContaDAO();
-                                                                        pagadorOperacao.newData(++idOperacoesConta, contaUser.id, contaDE.id,1, conta.saldo,3, descricao, valorTransferencia, format.format(calendario.getTime()), null);
-                                                                        recebedorOperacao.newData(++idOperacoesConta, contaDE.id, contaUser.id,2, resultDE,5, descricao, valorTransferencia, format.format(calendario.getTime()), null);
-                                                                        boolean pagador = operacoesContaController.insert(pagadorOperacao, vetorOperacoesConta);
-                                                                        boolean recebedor = operacoesContaController.insert(recebedorOperacao, vetorOperacoesConta);
-                                                                        if(pagador && recebedor){ 
+                                                                        int idPagador = ++idOperacoesConta;
+                                                                        int idRecebedor = ++idOperacoesConta;
+                                                                        boolean result = operacoesContaController.newOperation(conta, contaDE, vetorOperacoesConta, idPagador, idRecebedor, descricao, calendario, valorTransferencia, resultDE);
+                                                                        if(result){ 
                                                                             JOptionPane.showMessageDialog(null,"Transferência realizada");    
                                                                         } else {
                                                                             JOptionPane.showMessageDialog(null,"Ocorreu um erro ao registrar operação");
@@ -654,11 +655,8 @@ public class HomeBroker {
                                                             double result = operacoesContaController.depositoSaque(conta.saldo, opDeposito, true);
                                                             if(result != -1){
                                                                 String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
-                                                                ContaDAO depositoConta = new ContaDAO();
-                                                                int indice = contaController.returnIndex(conta.id, vetorConta);
-                                                                depositoConta.newData(conta.id, conta.cliente, result, conta.dataCriacao, conta.dataModificacao);
-                                                                if(contaController.update(depositoConta, vetorConta, indice)) {
-                                                                    conta = depositoConta;
+                                                                conta.newData(conta.id, conta.cliente, result, conta.dataCriacao, conta.dataModificacao);
+                                                                if(contaController.update(conta, vetorConta, indiceConta)) {
                                                                     if(verificador){
                                                                         menuCOMConta = "Saldo: " + conta.saldo + "\n1 - Extrato\n2 - Pagamento\n3 - Tranferência\n4 - Depósito\n5 - Saque\n6 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
                                                                     }
@@ -693,11 +691,8 @@ public class HomeBroker {
                                                                 verifySenha = JOptionPane.showInputDialog("Confirme sua senha");
                                                                 if(verifySenha.hashCode() == user.senha.hashCode()){//VERIFICAR SENHA
                                                                 String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
-                                                                ContaDAO saqueConta = new ContaDAO();
-                                                                int indice = contaController.returnIndex(conta.id, vetorConta);
-                                                                saqueConta.newData(conta.id, conta.cliente, result, conta.dataCriacao, conta.dataModificacao);
-                                                                if(contaController.update(saqueConta, vetorConta, indice)) {
-                                                                    conta = saqueConta;
+                                                                conta.newData(conta.id, conta.cliente, result, conta.dataCriacao, conta.dataModificacao);
+                                                                if(contaController.update(conta, vetorConta, indiceConta)) {
                                                                     if(verificador){
                                                                         menuCOMConta = "Saldo: " + conta.saldo + "\n1 - Extrato\n2 - Pagamento\n3 - Tranferência\n4 - Depósito\n5 - Saque\n6 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
                                                                     }

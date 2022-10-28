@@ -33,18 +33,10 @@ public class CobrancaDeTaxa {
                     boolean admContaUpdate = contaController.update(vetorConta[0], vetorConta, 0);
 
                     if(userContaUpdate && admContaUpdate){
-                        OperacoesContaDAO userOperacao = new OperacoesContaDAO();
-                        userOperacao.newData(++idOperacoesConta, element.id, vetorConta[0].id
-                                , 1, userResult, 4, "Taxa de Manutenção"
-                                , 20, format.format(calendario.getTime()), "");
-                        boolean userOp = operacoesContaController.insert(userOperacao, vetorOperacoesConta);
-
-                        OperacoesContaDAO admOperacao = new OperacoesContaDAO();
-                        admOperacao.newData(++idOperacoesConta, vetorConta[0].id, element.id
-                                , 2, admResult, 5, "Taxa de Manutenção"
-                                , 20, format.format(calendario.getTime()), "");
-                        boolean admOp = operacoesContaController.insert(admOperacao, vetorOperacoesConta);
-                        if(userOp && admOp) {
+                        int idPagador = ++idOperacoesConta;
+                        int idRecebedor = ++idOperacoesConta;
+                        boolean result = operacoesContaController.newOperation(element, vetorConta[0], vetorOperacoesConta, idPagador, idRecebedor, null, calendario, 20, admResult);
+                        if(result) {
                             if(conta != null){
                                 if(element.id == conta.id) {
                                     conta = element;

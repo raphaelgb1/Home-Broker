@@ -2,7 +2,7 @@ package dao;
 
 import controller.BookController;
 
-public class bookDAO extends BookController {
+public class BookDAO extends BookController {
     public AtivosDAO[] ativo = new AtivosDAO[3];
     private OrdemDAO[] ofertas_vendas = new OrdemDAO[500];
     private OrdemDAO[] ofertas_compra = new OrdemDAO[500];
@@ -54,7 +54,7 @@ public class bookDAO extends BookController {
         }
     }
 
-    public bookDAO newData(String data) {
+    public BookDAO newData(String data) {
         int id = 1;
         for (AtivosDAO ativos : this.ativo) {
             ativos = new AtivosDAO();
