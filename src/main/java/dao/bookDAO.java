@@ -71,8 +71,6 @@ public class BookDAO extends BookController {
             extrato += "Ticker: " + element.ticker + "\n";
             extrato += "Empresa: " + element.empresa + "\n";
             extrato += "Preço inicial: " + element.preço_inicial + "\n";
-            extrato += "Data criacao: " + element.dataCriacao + "\n";
-            extrato += "Data do ultimo valor: " + element.dataModificacao + "\n";
             extrato += "Ultimo valor: " + element.ultimo_valor + "\n";
             extrato += "\n------------------------------\n";
         }
