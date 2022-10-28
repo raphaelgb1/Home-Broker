@@ -755,10 +755,32 @@ public class HomeBroker {
                                     Ordem.getAtivo().setDataCriacao(format.format(calendario.getTime()));
                                     Ordem.getAtivo().setDataModificacao(format.format(calendario.getTime()));
                                     if(tipo_Ordem != 0){
-                                        if(book.Cadastro_Ordem(Ordem))
-                                                JOptionPane.showMessageDialog(null, "Ordem enviada com sucesso " + user.nome + "!");
-                                            else
-                                                JOptionPane.showMessageDialog(null, "Erro ao enviada Ordem " + user.nome + "!");
+                                        AtivosDAO ativo = Ordem.getAtivo();
+                                        double result = 0;
+                                        double valor = ativo.preço_inicial*ativo.Quantidade;
+                                        if(tipo_Ordem == 1) {   
+                                            result = operacoesContaController.depositoSaque(conta.saldo, valor, false);
+                                        } else {
+                                            result = operacoesContaController.depositoSaque(conta.saldo, valor, true);
+                                        }
+
+                                        conta.newData(conta.id, conta.cliente, result, conta.dataCriacao, conta.dataModificacao);
+                                        if(contaController.update(conta, vetorConta, indiceConta)) {
+                                            String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
+                                            OperacoesContaDAO operation = new OperacoesContaDAO();
+                                            operation.newData(++idOperacoesConta, conta.id, 0, 1, conta.saldo, 4, descricao, valor, format.format(calendario.getTime()), null);
+                                            if(operacoesContaController.insert(operation, vetorOperacoesConta)){                      
+                                                if(book.Cadastro_Ordem(Ordem))
+                                                        JOptionPane.showMessageDialog(null, "Ordem enviada com sucesso ");
+                                                    else
+                                                        JOptionPane.showMessageDialog(null, "Erro ao enviada Ordem ");
+                                            } else {
+                                                JOptionPane.showMessageDialog(null,"Ocorreu um erro ao registrar operação");
+                                            } 
+                                        } else {
+                                            JOptionPane.showMessageDialog(null, "Erro ao atualizar conta");
+                                        };
+
                                     }
                                 break;
                                 
