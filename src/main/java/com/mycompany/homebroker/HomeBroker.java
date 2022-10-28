@@ -8,10 +8,13 @@ package com.mycompany.homebroker;
 import controller.ClienteController;
 import controller.CobrancaDeTaxa;
 import controller.ContaController;
+import controller.InvestimentoController;
 import controller.OperacoesContaController;
 import dao.AtivosDAO;
 import dao.ClienteDAO;
 import dao.ContaDAO;
+import dao.InvestOrdemDAO;
+import dao.InvestimentoDAO;
 import dao.OperacoesContaDAO;
 import dao.OrdemDAO;
 
@@ -35,6 +38,8 @@ public class HomeBroker {
         ContaController contaController = new ContaController();
         ClienteDAO[] vetorCliente = new ClienteDAO[5];
         ContaDAO[] vetorConta = new ContaDAO[5];
+        InvestimentoDAO[] vetorInvestimento = new InvestimentoDAO[5];
+        InvestimentoController investimentoController = new InvestimentoController();
         CobrancaDeTaxa cobrancaDeTaxa = new CobrancaDeTaxa();
         OperacoesContaDAO[] vetorOperacoesConta = new OperacoesContaDAO[100];
         UtilsObj utils = new UtilsObj();
@@ -57,6 +62,7 @@ public class HomeBroker {
         int idCliente = 1;
         int idConta = 0;
         int idOperacoesConta = 0;
+        int idInvestimento = 0;
         
         boolean verificador = false;
         
@@ -87,6 +93,10 @@ public class HomeBroker {
         ContaDAO newContaUser = new ContaDAO();
         newContaUser.newData(++idConta, clienteUser.id, 520000.00, format.format(calendario.getTime()), null);
         contaController.insert(newContaUser, vetorConta);
+        InvestOrdemDAO[] investOrdem = new InvestOrdemDAO[100];
+        InvestimentoDAO investimento = new InvestimentoDAO();
+        investimento.newData(++idInvestimento, newContaUser.id, investOrdem, format.format(calendario.getTime()), null);
+        investimentoController.insert(investimento, vetorInvestimento);
         
 //CRIACÃO USUÁRIO PROVISÓRIO PARA TESTES
         idCliente++;
@@ -96,6 +106,10 @@ public class HomeBroker {
         ContaDAO newContaUser2 = new ContaDAO();
         newContaUser2.newData(++idConta, clienteUser2.id, 520000.00, format.format(calendario.getTime()), null);
         contaController.insert(newContaUser2, vetorConta);
+        InvestOrdemDAO[] investOrdem2 = new InvestOrdemDAO[100];
+        InvestimentoDAO investimento2 = new InvestimentoDAO();
+        investimento2.newData(++idInvestimento, newContaUser2.id, investOrdem2, format.format(calendario.getTime()), null);
+        investimentoController.insert(investimento2, vetorInvestimento);
   
         try {
             do {
@@ -166,6 +180,11 @@ public class HomeBroker {
                                             double resultUser = operacoesContaController.depositoSaque(0, 500000, true);
                                             newConta.newData(++idConta, idCliente, resultUser, creation, null);                                            
                                             boolean resultaUserInsert = contaController.insert(newConta, vetorConta); 
+
+                                            InvestOrdemDAO[] newInvestOrdem = new InvestOrdemDAO[100];
+                                            InvestimentoDAO newInvest = new InvestimentoDAO();
+                                            newInvest.newData(++idInvestimento, newConta.id, newInvestOrdem, format.format(calendario.getTime()), null);
+                                            investimentoController.insert(newInvest, vetorInvestimento);
                                             
                                             if(resultaUserInsert && resultaAdmUpdate){
                                                 //DEPOSITO AUTOMATICO DE 20K
@@ -174,6 +193,7 @@ public class HomeBroker {
                                                 OperacoesContaDAO opDeposito = new OperacoesContaDAO();
                                                 opDeposito.newData(++idOperacoesConta, newConta.id, contaAdm.id, 2, newConta.saldo,1, "Depósito Automático", 20000, format.format(calendario.getTime()), null);
                                                 operacoesContaController.insert(opDeposito, vetorOperacoesConta);
+                                                idOperacoesConta = operacoesContaController.newOperation(contaAdm, newConta, vetorOperacoesConta, idOperacoesConta, "Transferência Bônus", calendario, 500000, resultUser, false);
                                                 
                                                 JOptionPane.showMessageDialog (null, "Usuário e Conta Criados");
                                             } else {
@@ -505,6 +525,7 @@ public class HomeBroker {
                            
                         //MENU DO USUÁRIO COMUM
                         ContaDAO conta = contaController.returnContaByCliente(user.id, vetorConta);
+                        InvestimentoDAO contaInvest = investimentoController.returnObjectByConta(conta.id, vetorInvestimento);
                         JOptionPane.showMessageDialog(null, "Bem vindo " + user.nome + "!");
                         do{
                             String dataAtualStr = formatDate.format(calendario.getTime());
@@ -776,7 +797,6 @@ public class HomeBroker {
                                 case 4://ORDEM****************************************
                                     OrdemDAO Ordem = new OrdemDAO(idOrdem++);
                                     int tipo_Ordem;
-                                    int qtd;
                                     int id_Ordem = Integer.parseInt(JOptionPane.showInputDialog(book.Ativos_book() + "\n\nQual \"ID\" do ativo:"));
                                     // Ordem.setId(idOrdem++);
                                     Ordem.setAtivo(book.getAtivo(id_Ordem));
@@ -823,6 +843,10 @@ public class HomeBroker {
                                     } else {
                                         JOptionPane.showMessageDialog(null, "Saldo insuficiente");
                                     }
+
+                                    InvestOrdemDAO investOr = new InvestOrdemDAO();
+                                    investOr.newData(Ordem);
+                                    contaInvest.setInvestimentoOrdem(investOr);
                                     
                                 break;
                                 
