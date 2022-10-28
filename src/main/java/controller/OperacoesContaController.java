@@ -60,23 +60,19 @@ public class OperacoesContaController extends CrudController {
         }
     }
 
-    public boolean newOperation (ContaDAO contaPagador, ContaDAO contaRecebedor, OperacoesContaDAO[] vetorOperacoesConta, int idPagador, int idRecebedor, String descricao, GregorianCalendar calendario, double transferencia, double resultDE) {
+    public int newOperation (ContaDAO contaPagador, ContaDAO contaRecebedor, OperacoesContaDAO[] vetorOperacoesConta, int idOperacoesConta, String descricao, GregorianCalendar calendario, double transferencia, double resultDE) {
         try{
             OperacoesContaDAO pagador = new OperacoesContaDAO();
             OperacoesContaDAO recebedor = new OperacoesContaDAO();  
             
-            pagador.newData(idPagador, contaPagador.id, contaRecebedor.id,1, contaPagador.saldo,3, descricao, transferencia, format.format(calendario.getTime()), null);
-            recebedor.newData(idRecebedor, contaRecebedor.id, contaPagador.id,2, resultDE,5, descricao, transferencia, format.format(calendario.getTime()), null);
-            boolean resultPag = insert(pagador, vetorOperacoesConta);
-            boolean resultRec = insert(recebedor, vetorOperacoesConta);
-
-            if(resultPag && resultRec) {
-                return true;
-            }
-
-            return false;
+            pagador.newData(++idOperacoesConta, contaPagador.id, contaRecebedor.id,1, contaPagador.saldo,3, descricao, transferencia, format.format(calendario.getTime()), null);
+            recebedor.newData(++idOperacoesConta, contaRecebedor.id, contaPagador.id,2, resultDE,5, descricao, transferencia, format.format(calendario.getTime()), null);
+            insert(pagador, vetorOperacoesConta);
+            insert(recebedor, vetorOperacoesConta);
+            
+            return idOperacoesConta;
         } catch (Exception err) {
-            return false;
+            throw err;
         }
     }
 }

@@ -19,37 +19,25 @@ public class CobrancaDeTaxa {
     OperacoesContaController operacoesContaController = new OperacoesContaController();
     SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
     
-    public boolean cobrarTaxa (ContaDAO[] vetorConta, ContaDAO conta, int idOperacoesConta, OperacoesContaDAO[] vetorOperacoesConta, GregorianCalendar calendario) {
+    public int cobrarTaxa (ContaDAO[] vetorConta, ContaDAO conta, int idOperacoesConta, OperacoesContaDAO[] vetorOperacoesConta, GregorianCalendar calendario) {
         try {           
             for (ContaDAO element : vetorConta) {
                 if(element != null && element.id != 1) {    
-                    int indice = contaController.returnIndex(element.id, vetorConta);
                     double userResult = operacoesContaController.depositoSaque(element.saldo, 20, false);
                     double admResult = operacoesContaController.depositoSaque(vetorConta[0].saldo, 20, true);
 
-                    element.newData(element.id, element.cliente, userResult, element.dataCriacao, element.dataModificacao);
-                    vetorConta[0].newData(vetorConta[0].id, vetorConta[0].cliente, admResult, vetorConta[0].dataCriacao, vetorConta[0].dataModificacao);
-                    boolean userContaUpdate = contaController.update(element, vetorConta, indice);
-                    boolean admContaUpdate = contaController.update(vetorConta[0], vetorConta, 0);
+                    boolean userContaUpdate = element.setSaldo(userResult);
+                    boolean admContaUpdate =  vetorConta[0].setSaldo(admResult);
 
                     if(userContaUpdate && admContaUpdate){
-                        int idPagador = ++idOperacoesConta;
-                        int idRecebedor = ++idOperacoesConta;
-                        boolean result = operacoesContaController.newOperation(element, vetorConta[0], vetorOperacoesConta, idPagador, idRecebedor, null, calendario, 20, admResult);
-                        if(result) {
-                            if(conta != null){
-                                if(element.id == conta.id) {
-                                    conta = element;
-                                } 
-                            }
-                        } 
+                       idOperacoesConta = operacoesContaController.newOperation(element, vetorConta[0], vetorOperacoesConta, idOperacoesConta, null, calendario, 20, admResult);
                     } 
                 }
             }
             
-            return true;
+            return idOperacoesConta;
         } catch (Exception err) {
-            return false;
+            throw err;
         }
     }
 }
