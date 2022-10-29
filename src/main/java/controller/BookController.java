@@ -1,10 +1,10 @@
 package controller;
 
-import dao.bookDAO;
+import dao.BookDAO;
 
 public class BookController{
-    public static bookDAO NewBook(String data) {
-        bookDAO book = new bookDAO();
+    public static BookDAO NewBook(String data) {
+        BookDAO book = new BookDAO();
         book.newData(data);
         return book;
     }

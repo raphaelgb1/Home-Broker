@@ -10,7 +10,7 @@ import dao.CrudDAO;
  *
  * @author rapha
  */
-public class CrudController {
+public class CrudController extends Object implements Cloneable {
     
     CrudDAO crudDAO = new CrudDAO();
     
@@ -41,12 +41,5 @@ public class CrudController {
             return false;  
         }
     }
-    
-//    public boolean read (Object[] vetor, Object obj) {
-//        try {
-//            return crudDAO.read(vetor,obj);
-//        } catch (Exception err) {
-//            return false;
-//        }
-//    }
+ 
 }

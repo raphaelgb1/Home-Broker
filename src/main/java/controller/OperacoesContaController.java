@@ -4,6 +4,10 @@
  */
 package controller;
 
+import java.text.SimpleDateFormat;
+import java.util.GregorianCalendar;
+
+import dao.ContaDAO;
 import dao.OperacoesContaDAO;
 
 /**
@@ -11,6 +15,9 @@ import dao.OperacoesContaDAO;
  * @author rapha
  */
 public class OperacoesContaController extends CrudController {
+
+    SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+
     public int returnIndex (int id, OperacoesContaDAO[] vetor){
         try {
             for (int x = 0; x < vetor.length; x++) {
@@ -50,6 +57,25 @@ public class OperacoesContaController extends CrudController {
             }
         } catch (Exception err) {
             return -1;
+        }
+    }
+
+    public int newOperation (ContaDAO contaPagador, ContaDAO contaRecebedor, OperacoesContaDAO[] vetorOperacoesConta, int idOperacoesConta, String descricao, GregorianCalendar calendario, double transferencia, double resultDE, boolean pagTrans) {
+        try{
+            //TRUE = PAGAMENTO, FALSE = TRANSFERÊCIA
+            int tipo = (pagTrans) ? 4 : 3;
+            String descricaoRec = (pagTrans) ? "Recebimento de Pagamento" : "Recebimento de Transferência";
+            OperacoesContaDAO pagador = new OperacoesContaDAO();
+            OperacoesContaDAO recebedor = new OperacoesContaDAO();  
+            
+            pagador.newData(++idOperacoesConta, contaPagador.id, contaRecebedor.id,1, contaPagador.saldo,tipo, descricao, transferencia, format.format(calendario.getTime()), null);
+            recebedor.newData(++idOperacoesConta, contaRecebedor.id, contaPagador.id,2, resultDE,5, descricaoRec, transferencia, format.format(calendario.getTime()), null);
+            insert(pagador, vetorOperacoesConta);
+            insert(recebedor, vetorOperacoesConta);
+
+            return idOperacoesConta;
+        } catch (Exception err) {
+            throw err;
         }
     }
 }

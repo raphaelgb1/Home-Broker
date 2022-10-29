@@ -5,6 +5,7 @@ public class OrdemDAO{
     AtivosDAO ativo; //ativo a ser negociado
     ContaDAO conta;  // conta da pessoa
     int tipo_ordem;  // 2 = venda -------------- 1 = compra -------------- 0 = ordem 0
+    boolean pendente;
     /**
      * Construtor
      */
@@ -28,6 +29,9 @@ public class OrdemDAO{
     }
     public void setAtivo(AtivosDAO ativo) {
         this.ativo = ativo;
+    }
+    public void setPendente(boolean pendente) {
+        this.pendente = pendente;
     }
     public ContaDAO getConta() {
         return conta;

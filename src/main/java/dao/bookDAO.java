@@ -2,7 +2,7 @@ package dao;
 
 import controller.BookController;
 
-public class bookDAO extends BookController {
+public class BookDAO extends BookController {
     public AtivosDAO[] ativo = new AtivosDAO[3];
     private OrdemDAO[] ofertas_vendas = new OrdemDAO[500];
     private OrdemDAO[] ofertas_compra = new OrdemDAO[500];
@@ -38,6 +38,7 @@ public class bookDAO extends BookController {
             return false;
         }
     }
+
     public int getOfertas_Compra(AtivosDAO ativo, ContaDAO conta) {//pega quantidade de acões de um ativo
         try{
             int Quantidade = 0;
@@ -69,7 +70,13 @@ public class bookDAO extends BookController {
         catch (Exception err ){
             return "";
         }
+
+
+    public AtivosDAO[] getAtivos () {
+        return this.ativo;
+
     }
+    
     public boolean setOfertas_Venda(OrdemDAO ofertas_vendas) {
         try{
             int count = 0;
@@ -86,7 +93,7 @@ public class bookDAO extends BookController {
         }
     }
 
-    public bookDAO newData(String data) {
+    public BookDAO newData(String data) {
         int id = 1;
         for (AtivosDAO ativos : this.ativo) {
             ativos = new AtivosDAO();
@@ -103,8 +110,6 @@ public class bookDAO extends BookController {
             extrato += "Ticker: " + element.ticker + "\n";
             extrato += "Empresa: " + element.empresa + "\n";
             extrato += "Preço inicial: " + element.preço_inicial + "\n";
-            extrato += "Data criacao: " + element.dataCriacao + "\n";
-            extrato += "Data do ultimo valor: " + element.dataModificacao + "\n";
             extrato += "Ultimo valor: " + element.ultimo_valor + "\n";
             extrato += "\n------------------------------\n";
         }

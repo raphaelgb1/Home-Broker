@@ -19,45 +19,25 @@ public class CobrancaDeTaxa {
     OperacoesContaController operacoesContaController = new OperacoesContaController();
     SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
     
-    public boolean cobrarTaxa (ContaDAO[] vetorConta, ContaDAO conta, int idOperacoesConta, OperacoesContaDAO[] vetorOperacoesConta, GregorianCalendar calendario) {
+    public int cobrarTaxa (ContaDAO[] vetorConta, int idOperacoesConta, OperacoesContaDAO[] vetorOperacoesConta, GregorianCalendar calendario) {
         try {           
             for (ContaDAO element : vetorConta) {
-                if(element != null && element.id != 1) {    
-                    int indice = contaController.returnIndex(element.id, vetorConta);
+                if(element != null && element.id > 2) {    
                     double userResult = operacoesContaController.depositoSaque(element.saldo, 20, false);
                     double admResult = operacoesContaController.depositoSaque(vetorConta[0].saldo, 20, true);
 
-                    element.newData(element.id, element.cliente, userResult, element.dataCriacao, element.dataModificacao);
-                    vetorConta[0].newData(vetorConta[0].id, vetorConta[0].cliente, admResult, vetorConta[0].dataCriacao, vetorConta[0].dataModificacao);
-                    boolean userContaUpdate = contaController.update(element, vetorConta, indice);
-                    boolean admContaUpdate = contaController.update(vetorConta[0], vetorConta, 0);
+                    boolean userContaUpdate = element.setSaldo(userResult);
+                    boolean admContaUpdate =  vetorConta[0].setSaldo(admResult);
 
                     if(userContaUpdate && admContaUpdate){
-                        OperacoesContaDAO userOperacao = new OperacoesContaDAO();
-                        userOperacao.newData(++idOperacoesConta, element.id, vetorConta[0].id
-                                , 1, userResult, 4, "Taxa de Manutenção"
-                                , 20, format.format(calendario.getTime()), "");
-                        boolean userOp = operacoesContaController.insert(userOperacao, vetorOperacoesConta);
-
-                        OperacoesContaDAO admOperacao = new OperacoesContaDAO();
-                        admOperacao.newData(++idOperacoesConta, vetorConta[0].id, element.id
-                                , 2, admResult, 5, "Taxa de Manutenção"
-                                , 20, format.format(calendario.getTime()), "");
-                        boolean admOp = operacoesContaController.insert(admOperacao, vetorOperacoesConta);
-                        if(userOp && admOp) {
-                            if(conta != null){
-                                if(element.id == conta.id) {
-                                    conta = element;
-                                } 
-                            }
-                        } 
+                       idOperacoesConta = operacoesContaController.newOperation(element, vetorConta[0], vetorOperacoesConta, idOperacoesConta, null, calendario, 20, admResult,true);
                     } 
                 }
             }
             
-            return true;
+            return idOperacoesConta;
         } catch (Exception err) {
-            return false;
+            throw err;
         }
     }
 }
