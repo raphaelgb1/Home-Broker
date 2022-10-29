@@ -62,7 +62,7 @@ public class HomeBroker {
         boolean verificador = false;
         
         String verifySenha = "";
-        String menuADM = "1 - Adicionar Usuario\n2 - Editar Usuario\n3 - Mostrar Cadastros\n4 - Excluir Usuário\n5 - Conta\n6 - Incrementar Dias\n\n0 - Sair\nDigite uma opção";
+        String menuADM = "1 - Adicionar Usuario\n2 - Editar Usuario\n3 - Mostrar Cadastros\n4 - Excluir Usuário\n5 - Conta\n6 - Incrementar Dias\n7 - Dividendo\n\n0 - Sair\nDigite uma opção";
         String menuCOM = "1 - Perfil\n2 - Conta\n3 - Ativos\n4 - Ordem de Compra\\Venda\n5 - Incrementar Dias\n0 - Sair\n\nDigite uma opção";
         String menuADMConta = "1 - Visualizar Informações da Conta\n2 - Editar Conta\n\n0 - Voltar\nDigite Uma Opção";
         String menuCOMPerfil = "1 - Visualizar Perfil\n2 - Editar Perfil\n\n0 - Voltar\nDigite uma opção";
@@ -440,7 +440,47 @@ public class HomeBroker {
                                      }
                                 break;
                                 case 7://dividendos
-                                     
+                                    // int id_Ordem = Integer.parseInt(JOptionPane.showInputDialog(book.Ativos_book() + "\n\nQual \"ID\" do ativo:"));
+                                    do {
+                                        opUpdate = 0;
+                                        if(utils.verifyObjectIsVoid(vetorCliente) == 0){
+                                            String auxMenuClienteUpdate = "";
+                                            for (ClienteDAO element : vetorCliente) {
+                                                if(element != null){
+                                                    auxMenuClienteUpdate += "Cliente: " + element.nome + " - Id: " + element.id + "\n";
+                                                }                      
+                                            }
+                                            int idUpdate = Integer.parseInt(JOptionPane.showInputDialog(auxMenuClienteUpdate + "\n0 - Voltar\nDigite o Id do Usuário"));
+                                            if (idUpdate == 0) {
+                                                opUpdate = 1;
+                                                break;
+                                            }
+                                            ClienteDAO clienteUdpdate = clienteController.returnObjectById(idUpdate, vetorCliente);
+                                            if(clienteUdpdate != null) {                    
+                                                if(clienteUdpdate.id >= 0) {
+                                                    verifySenha = JOptionPane.showInputDialog("Confirme a senha do Administrador");
+                                                    if(verifySenha.hashCode() == user.senha.hashCode()){//VERIFICAR SENHA
+                                                        int id_ativo = Integer.parseInt(JOptionPane.showInputDialog(book.Ativos_book() + "\n\nQual \"ID\" do ativo:"));
+                                                        Double preco_dividendo = Double.parseDouble(JOptionPane.showInputDialog("Qual valor do dividendo"));
+                                                        Double dividendo = book.Quantidade_Ativos_Conta(book.getAtivo(id_ativo), contaController.returnContaByCliente(user.id, vetorConta)) * preco_dividendo; //Valor do dividendo
+                                                        JOptionPane.showMessageDialog(null,"R$ " + dividendo);// pode apagar essa linha
+                                                        //fazer a transação do dinheiro
+
+
+
+                                                        opUpdate = 1;
+                                                    }  else {
+                                                        JOptionPane.showMessageDialog(null,"Senha Inválida");
+                                                    }
+                                                }   
+                                            } else {
+                                                JOptionPane.showMessageDialog(null,"Nenhum cliente encontrado");
+                                            }
+                                        } else {
+                                                JOptionPane.showMessageDialog(null, "Não há clientes cadastrados");
+                                                opUpdate = 1;
+                                        }
+                                    } while(opUpdate != 1);
                                 break;
                             } 
                         } while (op != 0);
@@ -745,7 +785,6 @@ public class HomeBroker {
                                 case 4://ORDEM****************************************
                                     OrdemDAO Ordem = new OrdemDAO(idOrdem++);
                                     int tipo_Ordem;
-                                    int qtd;
                                     int id_Ordem = Integer.parseInt(JOptionPane.showInputDialog(book.Ativos_book() + "\n\nQual \"ID\" do ativo:"));
                                     // Ordem.setId(idOrdem++);
                                     Ordem.setAtivo(book.getAtivo(id_Ordem));
@@ -794,6 +833,9 @@ public class HomeBroker {
                                             }
                                         }
                                      }
+                                break;
+                                case 6://listar ativos Meus
+                                    JOptionPane.showMessageDialog(null, book.getMeu_ativo(contaController.returnContaByCliente(user.id, vetorConta)));
                                 break;
                             } 
                         } while (op != 0);

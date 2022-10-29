@@ -38,6 +38,38 @@ public class bookDAO extends BookController {
             return false;
         }
     }
+    public int getOfertas_Compra(AtivosDAO ativo, ContaDAO conta) {//pega quantidade de acões de um ativo
+        try{
+            int Quantidade = 0;
+            for (OrdemDAO obj : this.ofertas_compra) {
+                if(obj.getConta().id == conta.id && obj.getAtivo().getId() == ativo.getId()) {
+                    Quantidade += obj.getAtivo().getQuantidade();
+                }
+            }
+            return Quantidade;
+        }
+        catch (Exception err ){
+            return 0;
+        }
+    }
+    public String getMeu_ativo(ContaDAO conta) {//pega quantidade de acões de um ativo
+        try{
+            String extrato = "";
+            for (OrdemDAO obj : this.ofertas_compra) {
+                if(obj.getConta().id == conta.id) {
+                    extrato += "Id: " + obj.getAtivo().getId() + "\n";
+                    extrato += "Ticker: " + obj.getAtivo().getTicker() + "\n";
+                    extrato += "Empresa: " + obj.getAtivo().getEmpresa() + "\n";
+                    extrato += "quantidade: " + obj.getAtivo().getQuantidade() + "\n";
+                    extrato += "\n------------------------------\n";
+                }
+            }
+            return extrato;
+        }
+        catch (Exception err ){
+            return "";
+        }
+    }
     public boolean setOfertas_Venda(OrdemDAO ofertas_vendas) {
         try{
             int count = 0;
@@ -87,5 +119,15 @@ public class bookDAO extends BookController {
         
         
         return status;
+    }
+    public int Quantidade_Ativos_Conta(AtivosDAO ativo, ContaDAO conta){
+        int Quantidade;
+        Quantidade = this.getOfertas_Compra(ativo, conta);
+        return Quantidade;
+    }
+    public String Meu_ativos(ContaDAO conta){
+        String string = "";
+        string = this.getMeu_ativo(conta);
+        return string;
     }
 }
