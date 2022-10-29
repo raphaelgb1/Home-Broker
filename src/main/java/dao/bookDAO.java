@@ -38,6 +38,45 @@ public class BookDAO extends BookController {
             return false;
         }
     }
+    public boolean ordem_venda(OrdemDAO Ordem){// Ordem = Ordem de compra
+        try{
+            double count = 0;
+            for (OrdemDAO obj : this.ofertas_vendas) {
+                if(obj.getAtivo().getId() == Ordem.getAtivo().getId() && (Ordem.getAtivo().getQuantidade()- Ordem.getAtivo().getQuantidade_excultada()) !=0 ) {
+                    if ((obj.getAtivo().getQuantidade() - obj.getAtivo().getQuantidade_excultada()) < (Ordem.getAtivo().getQuantidade() - Ordem.getAtivo().getQuantidade_excultada()))
+                        count  = (obj.getAtivo().getQuantidade() - obj.getAtivo().getQuantidade_excultada());
+                    else
+                        count  = (Ordem.getAtivo().getQuantidade() - Ordem.getAtivo().getQuantidade_excultada());
+                    Ordem.ativo.quantidade_excultada += count;
+                    obj.ativo.quantidade_excultada += count;
+                }
+            }
+            return true;
+        }
+        catch (Exception err ){
+            return false;
+        }
+    }
+    public boolean ordem_Compra(OrdemDAO Ordem){// Ordem = Ordem de venda
+        try{
+            double count = 0;
+            for (OrdemDAO obj : this.ofertas_compra) {
+                if(obj.getAtivo().getId() == Ordem.getAtivo().getId() && (Ordem.getAtivo().getQuantidade()- Ordem.getAtivo().getQuantidade_excultada()) !=0 ) {
+                    if ((obj.getAtivo().getQuantidade() - obj.getAtivo().getQuantidade_excultada()) < (Ordem.getAtivo().getQuantidade() - Ordem.getAtivo().getQuantidade_excultada()))
+                        count  = (obj.getAtivo().getQuantidade() - obj.getAtivo().getQuantidade_excultada());
+                    else
+                        count  = (Ordem.getAtivo().getQuantidade() - Ordem.getAtivo().getQuantidade_excultada());
+                    
+                    Ordem.ativo.quantidade_excultada += count;
+                    obj.ativo.quantidade_excultada += count;
+                }
+            }
+            return true;
+        }
+        catch (Exception err ){
+            return false;
+        }
+    }
 
     public int getOfertas_Compra(AtivosDAO ativo, ContaDAO conta) {//pega quantidade de acões de um ativo
         try{
@@ -57,11 +96,12 @@ public class BookDAO extends BookController {
         try{
             String extrato = "";
             for (OrdemDAO obj : this.ofertas_compra) {
-                if(obj.getConta().id == conta.id) {
+                if(obj.getConta().id == conta.id && obj.getAtivo().getQuantidade_excultada() >
+                 0) {
                     extrato += "Id: " + obj.getAtivo().getId() + "\n";
                     extrato += "Ticker: " + obj.getAtivo().getTicker() + "\n";
                     extrato += "Empresa: " + obj.getAtivo().getEmpresa() + "\n";
-                    extrato += "quantidade: " + obj.getAtivo().getQuantidade() + "\n";
+                    extrato += "quantidade: " + obj.getAtivo().getQuantidade_excultada() + "\n";
                     extrato += "\n------------------------------\n";
                 }
             }
@@ -70,7 +110,7 @@ public class BookDAO extends BookController {
         catch (Exception err ){
             return "";
         }
-
+    }
 
     public AtivosDAO[] getAtivos () {
         return this.ativo;
@@ -117,12 +157,13 @@ public class BookDAO extends BookController {
     }
     public boolean Cadastro_Ordem(OrdemDAO Ordem){
         boolean status;
-        if(Ordem.getTipo_ordem() == 1)
+        if(Ordem.getTipo_ordem() == 1){
             status = this.setOfertas_Compra(Ordem);
-        else
+            this.ordem_venda(Ordem);
+        }else{
             status = this.setOfertas_Venda(Ordem);
-        
-        
+            this.ordem_Compra(Ordem);
+        }
         return status;
     }
     public int Quantidade_Ativos_Conta(AtivosDAO ativo, ContaDAO conta){

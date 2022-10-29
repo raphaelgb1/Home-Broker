@@ -39,14 +39,15 @@ public class PrecoAtivosController {
                 for (InvestOrdemDAO elementOrdem : investimento.ordem) {
                     if(elementOrdem != null) {
                         AtivosDAO ativo = elementOrdem.getOrdem().getAtivo();
-                        AtivosDAO ativo2 = ativos[ativo.getId()];
+                        AtivosDAO ativo2 = ativos[ativo.getId()-1];
                         if(elementOrdem.getOrdem().getTipo_ordem() != 2) {
                             totalInvestido += ativo.preço_inicial*ativo.Quantidade;//INVESTIMENTO INICIAL
                             lucroPreju += (ativo2.preço_inicial*ativo.Quantidade)-totalInvestido;//INVESTIMENTO ATUAL
-                        } else {
-                            totalInvestido -= ativo.preço_inicial*ativo.Quantidade;//INVESTIMENTO INICIAL
-                            lucroPreju -= (ativo2.preço_inicial*ativo.Quantidade)-totalInvestido;
                         }
+                        // } else {
+                        //     totalInvestido -= ativo.preço_inicial*ativo.Quantidade;//INVESTIMENTO INICIAL
+                        //     lucroPreju -= (ativo2.preço_inicial*ativo.Quantidade)-totalInvestido;
+                        // }
                     }
                 }
                 investimento.setTotalInvestido(totalInvestido);

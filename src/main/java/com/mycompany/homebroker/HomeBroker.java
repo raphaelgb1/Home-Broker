@@ -537,38 +537,32 @@ public class HomeBroker {
                                             }
                                             ClienteDAO clienteUdpdate = clienteController.returnObjectById(idUpdate, vetorCliente);//CLIENTE
                                             ContaDAO contaUdpdate = contaController.returnContaByCliente(clienteUdpdate.id, vetorConta);//CONTA CLIENTE
-                                            if(clienteUdpdate != null) {                    
-                                                if(clienteUdpdate.id >= 0) {
-                                                    verifySenha = JOptionPane.showInputDialog("Confirme a senha do Administrador");
-                                                    if(verifySenha.hashCode() == user.senha.hashCode()){//VERIFICAR SENHA
-                                                        int id_ativo = Integer.parseInt(JOptionPane.showInputDialog(book.Ativos_book() + "\n\nQual \"ID\" do ativo:"));
-                                                        Double preco_dividendo = Double.parseDouble(JOptionPane.showInputDialog("Qual valor do dividendo"));
-                                                        Double dividendo = book.Quantidade_Ativos_Conta(book.getAtivo(id_ativo), contaController.returnContaByCliente(user.id, vetorConta)) * preco_dividendo; //Valor do dividendo
-                                                        JOptionPane.showMessageDialog(null,"R$ " + dividendo);// pode apagar essa linha
-                                                        
-                                                        //DEVOLVE O SALDO CALCULADO
-                                                        double resultAdmDiv = operacoesContaController.depositoSaque(contaAdm.saldo, dividendo, false);
-                                                        double resultDividendo = operacoesContaController.depositoSaque(contaUdpdate.saldo, dividendo, true);
+                                            if(clienteUdpdate != null) {
+                                                verifySenha = JOptionPane.showInputDialog("Confirme a senha do Administrador");
+                                                if(verifySenha.hashCode() == user.senha.hashCode()){//VERIFICAR SENHA
+                                                    int id_ativo = Integer.parseInt(JOptionPane.showInputDialog(book.Ativos_book() + "\n\nQual \"ID\" do ativo:"));
+                                                    Double preco_dividendo = Double.parseDouble(JOptionPane.showInputDialog("Qual valor do dividendo"));
+                                                    Double dividendo = book.Quantidade_Ativos_Conta(book.getAtivo(id_ativo), contaController.returnContaByCliente(user.id, vetorConta)) * preco_dividendo; //Valor do dividendo
+                                                    JOptionPane.showMessageDialog(null,"R$ " + dividendo);// pode apagar essa linha
+                                                    
+                                                    //DEVOLVE O SALDO CALCULADO
+                                                    double resultAdmDiv = operacoesContaController.depositoSaque(contaAdm.saldo, dividendo, false);
+                                                    double resultDividendo = operacoesContaController.depositoSaque(contaUdpdate.saldo, dividendo, true);
 
-                                                        //ATUALIZA O SALDO
-                                                        if(contaAdm.setSaldo(resultAdmDiv) && contaUdpdate.setSaldo(resultDividendo)){
+                                                    //ATUALIZA O SALDO
+                                                    if(contaAdm.setSaldo(resultAdmDiv) && contaUdpdate.setSaldo(resultDividendo)){
 
-                                                            //GUARDA LOG DE OPERAÇÃO PARA O EXTRATO
-                                                            idOperacoesConta = operacoesContaController.newOperation(contaAdm, contaUdpdate, vetorOperacoesConta, idOperacoesConta, "Pagamento de Dividendo"
-                                                            , calendario, dividendo, resultDividendo, true);
-                                                            JOptionPane.showMessageDialog(null,"Dividendo Depositado");
-                                                        };
-
-
-
-                                                        opUpdate = 1;
-                                                    }  else {
-                                                        JOptionPane.showMessageDialog(null,"Senha Inválida");
+                                                        //GUARDA LOG DE OPERAÇÃO PARA O EXTRATO
+                                                        idOperacoesConta = operacoesContaController.newOperation(contaAdm, contaUdpdate, vetorOperacoesConta, idOperacoesConta, "Pagamento de Dividendo"
+                                                        , calendario, dividendo, resultDividendo, true);
+                                                        JOptionPane.showMessageDialog(null,"Dividendo Depositado");
                                                     }
-                                                }   
-                                            } else {
-                                                JOptionPane.showMessageDialog(null,"Nenhum cliente encontrado");
-                                            }
+
+                                                    opUpdate = 1;
+                                                }  else {
+                                                    JOptionPane.showMessageDialog(null,"Senha Inválida");
+                                                }
+                                            } 
                                         } else {
                                                 JOptionPane.showMessageDialog(null, "Não há clientes cadastrados");
                                                 opUpdate = 1;
@@ -882,21 +876,21 @@ public class HomeBroker {
                                     
                                     AtivosDAO ativo = Ordem.getAtivo();
                                     double valor = ativo.preço_inicial*ativo.Quantidade;
+                                    ContaDAO pagador = conta ;
+                                    ContaDAO recebedor = bolsa ;
                                     double resultUser = operacoesContaController.depositoSaque(conta.saldo, valor, false);
-                                    double resultBolsa = operacoesContaController.depositoSaque(bolsa.saldo, valor, true);
-
-                                    // if(tipo_Ordem == 2) {
-                                    //     pagador = bolsa;
-                                    //     recebedor = conta;
-                                    //     resultUser = operacoesContaController.depositoSaque(conta.saldo, valor, true);
-                                    //     resultBolsa = operacoesContaController.depositoSaque(bolsa.saldo, valor, false);
-                                    // }
-
-                                    if(resultUser > 0 && tipo_Ordem == 0) {
+                                    double resultBolsa = operacoesContaController.depositoSaque(bolsa.saldo, valor, true); 
+                                    if(tipo_Ordem == 2) {
+                                        pagador = bolsa;
+                                        recebedor = conta;
+                                        resultUser = operacoesContaController.depositoSaque(conta.saldo, valor, true);
+                                        resultBolsa = operacoesContaController.depositoSaque(bolsa.saldo, valor, false);
+                                    }
+                                    if(resultUser > 0 && tipo_Ordem != 0) {
                                         if(conta.setSaldo(resultUser) && bolsa.setSaldo(resultBolsa)) {
                                             if(book.Cadastro_Ordem(Ordem)) {
                                                 String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
-                                                idOperacoesConta = operacoesContaController.newOperation(conta, bolsa, vetorOperacoesConta, idOperacoesConta, descricao, calendario, valor, resultBolsa, true);                     
+                                                idOperacoesConta = operacoesContaController.newOperation(pagador, recebedor, vetorOperacoesConta, idOperacoesConta, descricao, calendario, valor, resultBolsa, true);                     
                                                 JOptionPane.showMessageDialog(null, "Ordem de compra efetuada");
 
                                             } else {
@@ -907,6 +901,11 @@ public class HomeBroker {
                                         };
                                     } else {
                                         JOptionPane.showMessageDialog(null, "Saldo insuficiente");
+                                        conta.setSaldo(resultUser); 
+                                        bolsa.setSaldo(resultBolsa);
+                                        String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
+                                        idOperacoesConta = operacoesContaController.newOperation(pagador, recebedor, vetorOperacoesConta, idOperacoesConta, descricao, calendario, valor, resultBolsa, true);                     
+                                        JOptionPane.showMessageDialog(null, "Ordem de compra efetuada");
                                     }
                                     
                                     ContaDAO newCOnta = conta.returnClone();
