@@ -535,7 +535,8 @@ public class HomeBroker {
                                                 opUpdate = 1;
                                                 break;
                                             }
-                                            ClienteDAO clienteUdpdate = clienteController.returnObjectById(idUpdate, vetorCliente);
+                                            ClienteDAO clienteUdpdate = clienteController.returnObjectById(idUpdate, vetorCliente);//CLIENTE
+                                            ContaDAO contaUdpdate = contaController.returnContaByCliente(clienteUdpdate.id, vetorConta);//CONTA CLIENTE
                                             if(clienteUdpdate != null) {                    
                                                 if(clienteUdpdate.id >= 0) {
                                                     verifySenha = JOptionPane.showInputDialog("Confirme a senha do Administrador");
@@ -544,7 +545,19 @@ public class HomeBroker {
                                                         Double preco_dividendo = Double.parseDouble(JOptionPane.showInputDialog("Qual valor do dividendo"));
                                                         Double dividendo = book.Quantidade_Ativos_Conta(book.getAtivo(id_ativo), contaController.returnContaByCliente(user.id, vetorConta)) * preco_dividendo; //Valor do dividendo
                                                         JOptionPane.showMessageDialog(null,"R$ " + dividendo);// pode apagar essa linha
-                                                        //fazer a transação do dinheiro
+                                                        
+                                                        //DEVOLVE O SALDO CALCULADO
+                                                        double resultAdmDiv = operacoesContaController.depositoSaque(contaAdm.saldo, dividendo, false);
+                                                        double resultDividendo = operacoesContaController.depositoSaque(contaUdpdate.saldo, dividendo, true);
+
+                                                        //ATUALIZA O SALDO
+                                                        if(contaAdm.setSaldo(resultAdmDiv) && contaUdpdate.setSaldo(resultDividendo)){
+
+                                                            //GUARDA LOG DE OPERAÇÃO PARA O EXTRATO
+                                                            idOperacoesConta = operacoesContaController.newOperation(contaAdm, contaUdpdate, vetorOperacoesConta, idOperacoesConta, "Pagamento de Dividendo"
+                                                            , calendario, dividendo, resultDividendo, true);
+                                                            JOptionPane.showMessageDialog(null,"Dividendo Depositado");
+                                                        };
 
 
 
