@@ -43,10 +43,11 @@ public class PrecoAtivosController {
                         if(elementOrdem.getOrdem().getTipo_ordem() != 2) {
                             totalInvestido += ativo.preço_inicial*ativo.Quantidade;//INVESTIMENTO INICIAL
                             lucroPreju += (ativo2.preço_inicial*ativo.Quantidade)-totalInvestido;//INVESTIMENTO ATUAL
-                        } else {
-                            totalInvestido -= ativo.preço_inicial*ativo.Quantidade;//INVESTIMENTO INICIAL
-                            lucroPreju -= (ativo2.preço_inicial*ativo.Quantidade)-totalInvestido;
                         }
+                        //  else {
+                        //     totalInvestido -= ativo.preço_inicial*ativo.Quantidade;//INVESTIMENTO INICIAL
+                        //     lucroPreju -= (ativo2.preço_inicial*ativo.Quantidade)-totalInvestido;
+                        // }
                     }
                 }
                 investimento.setTotalInvestido(totalInvestido);
