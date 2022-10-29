@@ -70,8 +70,8 @@ public class HomeBroker {
         boolean verificador = false;
         
         String verifySenha = "";
-        String menuADM = "1 - Adicionar Usuario\n2 - Editar Usuario\n3 - Mostrar Cadastros\n4 - Excluir Usuário\n5 - Conta\n6 - Incrementar Dias\n7 - Dividendo\n\n0 - Sair\nDigite uma opção";
-        String menuCOM = "1 - Perfil\n2 - Conta\n3 - Ativos\n4 - Ordem de Compra\\Venda\n5 - Incrementar Dias\n0 - Sair\n\nDigite uma opção";
+        String menuADM = "1 - Adicionar Usuario\n2 - Editar Usuario\n3 - Mostrar Cadastros\n4 - Excluir Usuário\n5 - Conta\n6 - Incrementar Dias\n7 - Dividendo\n8 - Ordem de Compra\\Venda\n\n0 - Sair\nDigite uma opção";
+        String menuCOM = "1 - Perfil\n2 - Conta\n3 - Ativos\n4 - Ordem de Compra\\Venda\n5 - Incrementar Dias\n6 - Listar ativos Meus\n7 - Listar ativos Bolsa\n\n0 - Sair\n\nDigite uma opção";
         String menuADMConta = "1 - Visualizar Informações da Conta\n2 - Extrato\n3 - Editar Conta\n\n0 - Voltar\nDigite Uma Opção";
         String menuCOMPerfil = "1 - Visualizar Perfil\n2 - Editar Perfil\n\n0 - Voltar\nDigite uma opção";
         String menuCOMConta = "Saldo: ------\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Mostrar Saldo\n\n0 - Voltar\nDigite uma opção";
@@ -512,7 +512,7 @@ public class HomeBroker {
                                      for(int x = 0; x < incrementDays; x++){
                                         calendario.add(GregorianCalendar.DAY_OF_MONTH, 1);
                                         precoAtivos.atualizaPrecoAtivos(book);
-                                        precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book.getAtivos());
+                                        precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book);
                                         if(calendario.get(calendario.DAY_OF_MONTH) == 15) {
                                             idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, idOperacoesConta, vetorOperacoesConta, calendario);
                                             JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
@@ -568,6 +568,101 @@ public class HomeBroker {
                                                 opUpdate = 1;
                                         }
                                     } while(opUpdate != 1);
+                                break;
+                                case 8://ORDEM****************************************
+                                    //CRIAR AQUI O BOOKING DE OFERTAS
+                                    OrdemDAO Ordem = new OrdemDAO(idOrdem++);
+                                    int tipo_Ordem;
+                                    int id_Ordem = Integer.parseInt(JOptionPane.showInputDialog(book.Ativos_book() + "\n\nQual \"ID\" do ativo:"));
+                                    AtivosDAO newBook = book.getAtivo(id_Ordem).returnClone();
+                                    Ordem.setAtivo(newBook);
+                                    
+                                    do {
+                                        tipo_Ordem = Integer.parseInt(JOptionPane.showInputDialog("Qual tipo de Ordem:\n"
+                                        + "\n0 - Ordem 0\n1 - Compra\n2 - Venda \n"));
+                                    } while (tipo_Ordem < 0 || tipo_Ordem > 2);
+                                    if(tipo_Ordem == 2 && book.get_quantidadeordenscompra(contaAdm.id) == 0 && contaAdm.id != 1){
+                                        do {
+                                            tipo_Ordem = Integer.parseInt(JOptionPane.showInputDialog("Você nao pode vender ações que não tem.\n0 - sair\n1 - Ordem 0\n2 - Compra "));
+                                        } while (tipo_Ordem < 0 || tipo_Ordem > 2);
+                                        if (tipo_Ordem == 0) {
+                                            break;
+                                        }
+                                    }
+
+                                    if (tipo_Ordem == 0 && book.verificaOrdem_0(contaAdm.id, id_Ordem)) {
+                                        do {
+                                            tipo_Ordem = Integer.parseInt(JOptionPane.showInputDialog("Você nao pode fazer duas Ordem 0 para o mesmo ativo.\n0 - sair\n2 - Compra "));
+                                        } while (tipo_Ordem != 0 && tipo_Ordem != 2);
+                                        if (tipo_Ordem == 0) {
+                                            break;
+                                        }
+                                    }
+                                    Ordem.settipo_ordem(tipo_Ordem);
+                                    if(tipo_Ordem != 0)
+                                        Ordem.getAtivo().setPreço_inicial(Double.parseDouble(JOptionPane.showInputDialog("Preço para " + (tipo_Ordem == 2 ? "Venda" : "Compra"))));
+                                    else
+                                        Ordem.getAtivo().setPreço_inicial(book.getAtivo(id_Ordem).getPreço_inicial() * 0.9);
+                                    do {
+                                        Ordem.getAtivo().setQuantidade(Integer.parseInt(JOptionPane.showInputDialog("Quantidade de Ativos " + (tipo_Ordem == 2 ? "a Vender"+ "(de 0 a" + book.get_quantidadeordenscompra(id_Ordem)+")" : "a comprar"))));    
+                                    } while (tipo_Ordem == 2 && (Ordem.getAtivo().getQuantidade() > 0 && Ordem.getAtivo().getQuantidade() >= book.get_quantidadeordenscompra(id_Ordem)) && contaAdm.id != 1);
+                                    Ordem.getAtivo().setDataCriacao(format.format(calendario.getTime()));
+                                    Ordem.getAtivo().setDataModificacao(format.format(calendario.getTime()));
+                                    Ordem.setPendente(false);
+                                    
+                                    AtivosDAO ativo = Ordem.getAtivo();
+                                    double valor = ativo.preço_inicial*ativo.Quantidade;
+                                    ContaDAO pagador = contaAdm ;
+                                    ContaDAO recebedor = bolsa ;
+                                    double resultUser = operacoesContaController.depositoSaque(contaAdm.saldo, valor, false);
+                                    double resultBolsa = operacoesContaController.depositoSaque(bolsa.saldo, valor, true); 
+                                    if(tipo_Ordem == 2) {
+                                        pagador = bolsa;
+                                        recebedor = contaAdm;
+                                        resultUser = operacoesContaController.depositoSaque(contaAdm.saldo, valor, true);
+                                        resultBolsa = operacoesContaController.depositoSaque(bolsa.saldo, valor, false);
+                                    }
+                                    if(resultUser > 0 && tipo_Ordem != 0) {
+                                        if(contaAdm.setSaldo(resultUser) && bolsa.setSaldo(resultBolsa)) {
+                                            if(book.Cadastro_Ordem(Ordem)) {
+                                                String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
+                                                idOperacoesConta = operacoesContaController.newOperation(pagador, recebedor, vetorOperacoesConta, idOperacoesConta, descricao, calendario, valor, resultBolsa, true);                     
+                                                JOptionPane.showMessageDialog(null, "Ordem de compra efetuada");
+
+                                            } else {
+                                                JOptionPane.showMessageDialog(null, "Erro ao enviada Ordem ");
+                                            }
+                                        } else {
+                                            JOptionPane.showMessageDialog(null, "Erro ao atualizar conta");
+                                        }
+                                    } else {
+                                        if(contaAdm.setSaldo(resultUser) && bolsa.setSaldo(resultBolsa)) {
+                                            if(book.setOfertas_ORDEM_0(Ordem)) {
+                                                String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
+                                                idOperacoesConta = operacoesContaController.newOperation(pagador, recebedor, vetorOperacoesConta, idOperacoesConta, descricao, calendario, valor, resultBolsa, true);                     
+                                                JOptionPane.showMessageDialog(null, "Ordem de compra efetuada");
+
+                                            } else {
+                                                JOptionPane.showMessageDialog(null, "Erro ao enviada Ordem ");
+                                            }
+                                        } else {
+                                            JOptionPane.showMessageDialog(null, "Erro ao atualizar conta");
+                                        }
+                                        //book.setOfertas_ORDEM_0(Ordem);
+                                        //JOptionPane.showMessageDialog(null, "Saldo insuficiente");
+                                        // conta.setSaldo(resultUser); 
+                                        // bolsa.setSaldo(resultBolsa);
+                                        // String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
+                                        // idOperacoesConta = operacoesContaController.newOperation(pagador, recebedor, vetorOperacoesConta, idOperacoesConta, descricao, calendario, valor, resultBolsa, true);                     
+                                        // JOptionPane.showMessageDialog(null, "Ordem de compra efetuada");
+                                    }
+                                    
+                                    // ContaDAO newCOnta = contaAdm.returnClone();
+                                    // Ordem.setConta(newCOnta);
+                                    // InvestOrdemDAO investOr = new InvestOrdemDAO();
+                                    // investOr.newData(Ordem);
+                                    // contaInvest.setInvestimentoOrdem(investOr);
+                                    
                                 break;
                             } 
                         } while (op != 0);
@@ -867,9 +962,30 @@ public class HomeBroker {
                                         tipo_Ordem = Integer.parseInt(JOptionPane.showInputDialog("Qual tipo de Ordem:\n"
                                         + "\n0 - Ordem 0\n1 - Compra\n2 - Venda \n"));
                                     } while (tipo_Ordem < 0 || tipo_Ordem > 2);
+                                    if(tipo_Ordem == 2 && book.get_quantidadeordenscompra(conta.id) == 0 && conta.id != 0){
+                                        do {
+                                            tipo_Ordem = Integer.parseInt(JOptionPane.showInputDialog("Você nao pode vender ações que não tem.\n0 - sair\n1 - Ordem 0\n2 - Compra "));
+                                        } while (tipo_Ordem < 0 || tipo_Ordem > 2);
+                                        if (tipo_Ordem == 0) {
+                                            break;
+                                        }
+                                    }
+                                    if (tipo_Ordem == 0 && book.verificaOrdem_0(conta.id, id_Ordem)) {
+                                        do {
+                                            tipo_Ordem = Integer.parseInt(JOptionPane.showInputDialog("Você nao pode fazer duas Ordem 0 para o mesmo ativo.\n0 - sair\n2 - Compra "));
+                                        } while (tipo_Ordem != 0 && tipo_Ordem != 2);
+                                        if (tipo_Ordem == 0) {
+                                            break;
+                                        }
+                                    }
                                     Ordem.settipo_ordem(tipo_Ordem);
-                                    Ordem.getAtivo().setPreço_inicial(Double.parseDouble(JOptionPane.showInputDialog("Preço para " + (tipo_Ordem == 2 ? "Venda" : "Compra"))));
-                                    Ordem.getAtivo().setQuantidade(Integer.parseInt(JOptionPane.showInputDialog("Quantidade de Ativos a compra")));
+                                    if(tipo_Ordem != 0)
+                                        Ordem.getAtivo().setPreço_inicial(Double.parseDouble(JOptionPane.showInputDialog("Preço para " + (tipo_Ordem == 2 ? "Venda" : "Compra"))));
+                                    else
+                                        Ordem.getAtivo().setPreço_inicial(book.getAtivo(id_Ordem).getPreço_inicial() * 0.9);
+                                    do {
+                                        Ordem.getAtivo().setQuantidade(Integer.parseInt(JOptionPane.showInputDialog("Quantidade de Ativos " + (tipo_Ordem == 2 ? "a Vender"+ "(de 0 a" + book.get_quantidadeordenscompra(id_Ordem)+")" : "a comprar"))));    
+                                    } while (tipo_Ordem == 2 && (Ordem.getAtivo().getQuantidade() > 0 && Ordem.getAtivo().getQuantidade() >= book.get_quantidadeordenscompra(id_Ordem)) && conta.id != 0);
                                     Ordem.getAtivo().setDataCriacao(format.format(calendario.getTime()));
                                     Ordem.getAtivo().setDataModificacao(format.format(calendario.getTime()));
                                     Ordem.setPendente(false);
@@ -898,14 +1014,27 @@ public class HomeBroker {
                                             }
                                         } else {
                                             JOptionPane.showMessageDialog(null, "Erro ao atualizar conta");
-                                        };
+                                        }
                                     } else {
-                                        JOptionPane.showMessageDialog(null, "Saldo insuficiente");
-                                        conta.setSaldo(resultUser); 
-                                        bolsa.setSaldo(resultBolsa);
-                                        String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
-                                        idOperacoesConta = operacoesContaController.newOperation(pagador, recebedor, vetorOperacoesConta, idOperacoesConta, descricao, calendario, valor, resultBolsa, true);                     
-                                        JOptionPane.showMessageDialog(null, "Ordem de compra efetuada");
+                                        if(conta.setSaldo(resultUser) && bolsa.setSaldo(resultBolsa)) {
+                                            if(book.setOfertas_ORDEM_0(Ordem)) {
+                                                String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
+                                                idOperacoesConta = operacoesContaController.newOperation(pagador, recebedor, vetorOperacoesConta, idOperacoesConta, descricao, calendario, valor, resultBolsa, true);                     
+                                                JOptionPane.showMessageDialog(null, "Ordem de compra efetuada");
+
+                                            } else {
+                                                JOptionPane.showMessageDialog(null, "Erro ao enviada Ordem ");
+                                            }
+                                        } else {
+                                            JOptionPane.showMessageDialog(null, "Erro ao atualizar conta");
+                                        }
+                                        //book.setOfertas_ORDEM_0(Ordem);
+                                        //JOptionPane.showMessageDialog(null, "Saldo insuficiente");
+                                        // conta.setSaldo(resultUser); 
+                                        // bolsa.setSaldo(resultBolsa);
+                                        // String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
+                                        // idOperacoesConta = operacoesContaController.newOperation(pagador, recebedor, vetorOperacoesConta, idOperacoesConta, descricao, calendario, valor, resultBolsa, true);                     
+                                        // JOptionPane.showMessageDialog(null, "Ordem de compra efetuada");
                                     }
                                     
                                     ContaDAO newCOnta = conta.returnClone();
@@ -935,7 +1064,7 @@ public class HomeBroker {
                                      for(int x = 0; x < incrementDays; x++){
                                         calendario.add(GregorianCalendar.DAY_OF_MONTH, 1);
                                         precoAtivos.atualizaPrecoAtivos(book);
-                                        precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book.getAtivos());
+                                        precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book);
                                         if(calendario.get(calendario.DAY_OF_MONTH) == 15) {
                                             idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, idOperacoesConta, vetorOperacoesConta, calendario);
                                             JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
@@ -943,7 +1072,18 @@ public class HomeBroker {
                                      }
                                 break;
                                 case 6://listar ativos Meus
-                                    JOptionPane.showMessageDialog(null, book.getMeu_ativo(contaController.returnContaByCliente(user.id, vetorConta)));
+                                    String Meus_ativos = book.getMeu_ativo(contaController.returnContaByCliente(user.id, vetorConta));
+                                    if(Meus_ativos == "")
+                                        JOptionPane.showMessageDialog(null,"Você não tem ativos");
+                                    else
+                                        JOptionPane.showMessageDialog(null, Meus_ativos);
+                                break;
+                                case 7://listar ativos bolsa
+                                    String Book_ativos = book.getBook_ativo();
+                                    if(Book_ativos == "")
+                                        JOptionPane.showMessageDialog(null,"Não a ativos, nem para compra ou venda");
+                                    else
+                                        JOptionPane.showMessageDialog(null, Book_ativos);
                                 break;
                             } 
                         } while (op != 0);

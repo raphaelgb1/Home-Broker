@@ -8,6 +8,7 @@ import dao.BookDAO;
 import dao.ContaDAO;
 import dao.InvestOrdemDAO;
 import dao.InvestimentoDAO;
+import dao.OrdemDAO;
 import utils.UtilsObj;
 
 public class PrecoAtivosController {
@@ -29,30 +30,48 @@ public class PrecoAtivosController {
         }
     }
 
-    public void atualizaTotalInvestido (ContaDAO[] conta, InvestimentoDAO[] vetorInvestimento, AtivosDAO[] ativos) {
-        
+    public void atualizaTotalInvestido (ContaDAO[] conta, InvestimentoDAO[] vetorInvestimento, BookDAO ativos) {
         for (ContaDAO element : conta) {
             double totalInvestido = 0;
             double lucroPreju = 0;
             if(element != null && element.cliente != 1){
                 InvestimentoDAO investimento = investimentoController.returnObjectByConta(element.id, vetorInvestimento);
-                for (InvestOrdemDAO elementOrdem : investimento.ordem) {
+                for (OrdemDAO elementOrdem : ativos.getOfertas_compra()) {
                     if(elementOrdem != null) {
-                        AtivosDAO ativo = elementOrdem.getOrdem().getAtivo();
-                        AtivosDAO ativo2 = ativos[ativo.getId()-1];
-                        if(elementOrdem.getOrdem().getTipo_ordem() != 2) {
-                            totalInvestido += ativo.preço_inicial*ativo.Quantidade;//INVESTIMENTO INICIAL
-                            lucroPreju += (ativo2.preço_inicial*ativo.Quantidade)-totalInvestido;//INVESTIMENTO ATUAL
+                        AtivosDAO ativ = elementOrdem.getAtivo();
+                        if(elementOrdem.getTipo_ordem() != 2) {
+                            totalInvestido += ativ.preço_inicial * ativ.quantidade_excultada;//INVESTIMENTO INICIAL
+                            lucroPreju += (ativos.getAtivo(ativ.getId()).preço_inicial * ativ.quantidade_excultada)-totalInvestido;//INVESTIMENTO ATUAL
                         } 
-                        // } else {
-                        //     totalInvestido -= ativo.preço_inicial*ativo.Quantidade;//INVESTIMENTO INICIAL
-                        //     lucroPreju -= (ativo2.preço_inicial*ativo.Quantidade)-totalInvestido;
-                        // }
+
                     }
                 }
                 investimento.setTotalInvestido(totalInvestido);
                 investimento.setLucroPrejuizo(lucroPreju);
             }   
         }
+        // for (ContaDAO element : conta) {
+        //     double totalInvestido = 0;
+        //     double lucroPreju = 0;
+        //     if(element != null && element.cliente != 1){
+        //         InvestimentoDAO investimento = investimentoController.returnObjectByConta(element.id, vetorInvestimento);
+        //         for (InvestOrdemDAO elementOrdem : investimento.ordem) {
+        //             if(elementOrdem != null) {
+        //                 AtivosDAO ativo = elementOrdem.getOrdem().getAtivo();
+        //                 if(elementOrdem.getOrdem().getTipo_ordem() != 2) {
+        //                     totalInvestido += ativo.preço_inicial*ativo.Quantidade;//INVESTIMENTO INICIAL
+        //                     lucroPreju += (ativo2.preço_inicial*ativo.Quantidade)-totalInvestido;//INVESTIMENTO ATUAL
+        //                 } 
+        //                 } else {
+        //                     totalInvestido -= ativo.preço_inicial*ativo.Quantidade;//INVESTIMENTO INICIAL
+        //                     lucroPreju -= (ativo2.preço_inicial*ativo.Quantidade)-totalInvestido;
+        //                 }
+        //             }
+        //         }
+        //         investimento.setTotalInvestido(totalInvestido);
+        //         investimento.setLucroPrejuizo(lucroPreju);
+        //     }   
+        // }
+        
     }
 }
