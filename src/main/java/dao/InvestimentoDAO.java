@@ -5,6 +5,8 @@ import controller.CrudController;
 public class InvestimentoDAO extends CrudController {
     public int id;
     public int conta;
+    public double totalInvestido;
+    public double lucroPrejuizo;
     public InvestOrdemDAO[] ordem = new InvestOrdemDAO[100];
     public String dataCriacao;
     public String dataModificacao;
@@ -26,6 +28,34 @@ public class InvestimentoDAO extends CrudController {
         }
         
     }
+
+    public boolean setTotalInvestido(double totalInvestido) {
+        try {
+            this.totalInvestido = totalInvestido;
+            return true;
+        } catch (Exception err) {
+            throw err;
+        }
+        
+    } 
+
+    public boolean setLucroPrejuizo(double totalInvestido) {
+        try {
+            this.lucroPrejuizo = totalInvestido;
+            return true;
+        } catch (Exception err) {
+            throw err;
+        }
+        
+    } 
+
+    public double getTotalInvestido() {
+        try {
+            return this.totalInvestido;
+        } catch (Exception err) {
+            throw err;
+        } 
+    } 
 
     public InvestOrdemDAO[] getInvestimentoOrdem() {
         try {

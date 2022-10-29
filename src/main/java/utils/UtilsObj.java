@@ -31,4 +31,13 @@ public class UtilsObj {
             return -1;
         }
     }
+
+    public double calculaJuros () {
+        try {
+            double random = -2 + (double) (Math.random() * 5);
+            return random;
+        } catch (Exception err) {
+            throw err;
+        }
+    }
 }

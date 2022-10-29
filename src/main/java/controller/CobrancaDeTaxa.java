@@ -19,7 +19,7 @@ public class CobrancaDeTaxa {
     OperacoesContaController operacoesContaController = new OperacoesContaController();
     SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
     
-    public int cobrarTaxa (ContaDAO[] vetorConta, ContaDAO conta, int idOperacoesConta, OperacoesContaDAO[] vetorOperacoesConta, GregorianCalendar calendario) {
+    public int cobrarTaxa (ContaDAO[] vetorConta, int idOperacoesConta, OperacoesContaDAO[] vetorOperacoesConta, GregorianCalendar calendario) {
         try {           
             for (ContaDAO element : vetorConta) {
                 if(element != null && element.id > 2) {    

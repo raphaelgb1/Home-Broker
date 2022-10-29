@@ -4,13 +4,13 @@
  */
 package dao;
 
-
+import controller.CrudController;
 
 /**
  *
  * @author rapha
  */
-public class ContaDAO {
+public class ContaDAO extends CrudController {
     public int id;
     public int cliente;
     public double saldo;
@@ -29,4 +29,14 @@ public class ContaDAO {
         this.saldo = saldo;
         return true;
     }
+
+    public ContaDAO returnClone () {
+        try {
+          return (ContaDAO)this.clone();
+        }
+        catch (CloneNotSupportedException ex) {
+          ex.printStackTrace();
+          return null;
+        }
+      }
 }

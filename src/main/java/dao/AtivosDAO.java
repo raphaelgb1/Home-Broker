@@ -1,7 +1,7 @@
 package dao;
 
 
-public class AtivosDAO {
+public class AtivosDAO extends Object implements Cloneable {
     // id, nome da empresa, ticker, total de ativos (cotas/acoes/...), preço inicial,  data criação e data modificação.
     /* --------------------------------------------------------------- */
     public int id;
@@ -31,6 +31,17 @@ public class AtivosDAO {
     }
     
     /* --------------------------------------------------------------- */
+
+    public double taxa;
+    public double getTaxa() {
+        return taxa;
+    }
+    public void setTaxa(double taxa) {
+        this.taxa = taxa;
+    }
+    
+    /* --------------------------------------------------------------- */
+
     public int total_de_ativos;
     public int getTotal_de_ativos() {
         return total_de_ativos;
@@ -106,6 +117,7 @@ public class AtivosDAO {
             this.setDataModificacao(data);
             this.setQuantidade(1000000);
             this.setUltimo_valor(40.00);
+            this.setTaxa(0);
         }
         // ativo - 2
         if (id == 2) {
@@ -117,6 +129,7 @@ public class AtivosDAO {
             this.setDataModificacao(data);
             this.setQuantidade(1000000);
             this.setUltimo_valor(50.00);
+            this.setTaxa(0);
         }
         // ativo - 3
         if (id == 3) {
@@ -128,7 +141,18 @@ public class AtivosDAO {
             this.setDataModificacao(data);
             this.setQuantidade(1000000);
             this.setUltimo_valor(10.00);
+            this.setTaxa(0);
         }
         return this;
     }
+
+    public AtivosDAO returnClone () {
+        try {
+          return (AtivosDAO)this.clone();
+        }
+        catch (CloneNotSupportedException ex) {
+          ex.printStackTrace();
+          return null;
+        }
+      }
 }

@@ -10,6 +10,7 @@ import controller.CobrancaDeTaxa;
 import controller.ContaController;
 import controller.InvestimentoController;
 import controller.OperacoesContaController;
+import controller.PrecoAtivosController;
 import dao.AtivosDAO;
 import dao.ClienteDAO;
 import dao.ContaDAO;
@@ -38,6 +39,7 @@ public class HomeBroker {
         ContaController contaController = new ContaController();
         ClienteDAO[] vetorCliente = new ClienteDAO[5];
         ContaDAO[] vetorConta = new ContaDAO[5];
+        PrecoAtivosController precoAtivos = new PrecoAtivosController();
         InvestimentoDAO[] vetorInvestimento = new InvestimentoDAO[5];
         InvestimentoController investimentoController = new InvestimentoController();
         CobrancaDeTaxa cobrancaDeTaxa = new CobrancaDeTaxa();
@@ -50,6 +52,7 @@ public class HomeBroker {
 
         BookDAO book = new BookDAO();
         book.newData(formatDate.format(calendario.getTime()));
+        precoAtivos.atualizaPrecoAtivos(book);
 
         int op = 0;
         int opUser = 0;
@@ -113,6 +116,7 @@ public class HomeBroker {
   
         try {
             do {
+                
             //AUTENTICAÇÃO DE SESSÃO
             String userName = JOptionPane.showInputDialog("Bem vindo ao HOME BROKER\n\n0 - Sair\nPara começar, insira seu Usuário");
             if(userName.hashCode() == "0".hashCode()){
@@ -127,7 +131,7 @@ public class HomeBroker {
                     ContaDAO contaAdm = vetorConta[0];
                     ContaDAO bolsa = vetorConta[1];
                     
-                    if(user.adm) {   
+                    if(user.adm) { 
                         //MENU DO USUÁRIO ADMINISTRADOR
                         JOptionPane.showMessageDialog(null, "Bem vindo " + user.nome + "!");
                         do{ 
@@ -147,7 +151,7 @@ public class HomeBroker {
                                     }
                                 }
                                 if(verifyPayment){
-                                    idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, null, idOperacoesConta, vetorOperacoesConta, calendario);
+                                    idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, idOperacoesConta, vetorOperacoesConta, calendario);
                                     JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
                                 }
                             }          
@@ -261,7 +265,7 @@ public class HomeBroker {
 
                                     break;
 
-                                case 3://MOSTRAR USUÁRIOS (COM EXECESSÃO DO ADMINISTRADOR)
+                                case 3://MOSTRAR USUÁRIOS
 
                                     do{
                                         String auxMenuClienteView = "";
@@ -505,10 +509,12 @@ public class HomeBroker {
                                              incrementDays = 30;
                                         break;
                                      }
-                                    for(int x = 0; x < incrementDays; x++){
+                                     for(int x = 0; x < incrementDays; x++){
                                         calendario.add(GregorianCalendar.DAY_OF_MONTH, 1);
-                                        if(calendario.get(calendario.DAY_OF_MONTH)== 15) {
-                                            idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, null, idOperacoesConta, vetorOperacoesConta, calendario);
+                                        precoAtivos.atualizaPrecoAtivos(book);
+                                        precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book.getAtivos());
+                                        if(calendario.get(calendario.DAY_OF_MONTH) == 15) {
+                                            idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, idOperacoesConta, vetorOperacoesConta, calendario);
                                             JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
                                         }
                                      }
@@ -526,6 +532,7 @@ public class HomeBroker {
                         //MENU DO USUÁRIO COMUM
                         ContaDAO conta = contaController.returnContaByCliente(user.id, vetorConta);
                         InvestimentoDAO contaInvest = investimentoController.returnObjectByConta(conta.id, vetorInvestimento);
+                        // double investimentoInicial = 0;
                         JOptionPane.showMessageDialog(null, "Bem vindo " + user.nome + "!");
                         do{
                             String dataAtualStr = formatDate.format(calendario.getTime());
@@ -545,15 +552,20 @@ public class HomeBroker {
                                     }
                                 }
                                 if(verifyPayment){
-                                    idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, null, idOperacoesConta, vetorOperacoesConta, calendario);
+                                    idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, idOperacoesConta, vetorOperacoesConta, calendario);
                                     JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
                                 }
                             }
                             
+                            //ROTINA ATUALIZAÇÃO DE LUCRO
+                            // precoAtivos.atualizaPrecoAtivos(book);
+                            // precoAtivos.calculaLucro(vetorConta, vetorInvestimento, book.getAtivos());
+
                             if(verificador){
                                 menuCOMConta = "Saldo: " + conta.saldo + "\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
                             }
                             
+                            double totalInvestido = 0;
                             op =  Integer.parseInt(JOptionPane.showInputDialog(dataAtualStr + "\n" + user.nome + "\n\n"+menuCOM));
                             switch (op){
                                 case 0:
@@ -791,16 +803,19 @@ public class HomeBroker {
                                     break;
 
                                 case 3://ATIVOS****************************************
+
+                                    //CRIAR AQUI A TELA MEUS ATIVOS
                                         JOptionPane.showMessageDialog(null, book.Ativos_book());
                                     break;
 
                                 case 4://ORDEM****************************************
+                                    //CRIAR AQUI O BOOKING DE OFERTAS
                                     OrdemDAO Ordem = new OrdemDAO(idOrdem++);
                                     int tipo_Ordem;
                                     int id_Ordem = Integer.parseInt(JOptionPane.showInputDialog(book.Ativos_book() + "\n\nQual \"ID\" do ativo:"));
-                                    // Ordem.setId(idOrdem++);
-                                    Ordem.setAtivo(book.getAtivo(id_Ordem));
-                                    Ordem.setConta(conta);
+                                    AtivosDAO newBook = book.getAtivo(id_Ordem).returnClone();
+                                    Ordem.setAtivo(newBook);
+                                    
                                     do {
                                         tipo_Ordem = Integer.parseInt(JOptionPane.showInputDialog("Qual tipo de Ordem:\n"
                                         + "\n0 - Ordem 0\n1 - Compra\n2 - Venda \n"));
@@ -837,13 +852,12 @@ public class HomeBroker {
                                         } else {
                                             JOptionPane.showMessageDialog(null, "Erro ao atualizar conta");
                                         };
-                                    } else if(resultUser > 0 && tipo_Ordem != 0) {
-                                       Ordem.setPendente(true);
-                                       JOptionPane.showMessageDialog(null, "Ordem enviada com sucesso, será processada em até 2 dias");
                                     } else {
                                         JOptionPane.showMessageDialog(null, "Saldo insuficiente");
                                     }
-
+                                    
+                                    ContaDAO newCOnta = conta.returnClone();
+                                    Ordem.setConta(newCOnta);
                                     InvestOrdemDAO investOr = new InvestOrdemDAO();
                                     investOr.newData(Ordem);
                                     contaInvest.setInvestimentoOrdem(investOr);
@@ -868,8 +882,10 @@ public class HomeBroker {
                                      
                                      for(int x = 0; x < incrementDays; x++){
                                         calendario.add(GregorianCalendar.DAY_OF_MONTH, 1);
+                                        precoAtivos.atualizaPrecoAtivos(book);
+                                        precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book.getAtivos());
                                         if(calendario.get(calendario.DAY_OF_MONTH) == 15) {
-                                            idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, conta, idOperacoesConta, vetorOperacoesConta, calendario);
+                                            idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, idOperacoesConta, vetorOperacoesConta, calendario);
                                             JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
                                         }
                                      }

@@ -38,6 +38,10 @@ public class BookDAO extends BookController {
             return false;
         }
     }
+
+    public AtivosDAO[] getAtivos () {
+        return this.ativo;
+    }
     public boolean setOfertas_Venda(OrdemDAO ofertas_vendas) {
         try{
             int count = 0;
