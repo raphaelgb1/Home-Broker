@@ -34,4 +34,46 @@ public class ClienteDAO {
         this.dataCriacao = dataCriacao;
         this.dataModificacao = dataModificacao;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public String getEndereco() {
+        return endereco;
+    }
+
+    public String getCPF() {
+        return CPF;
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+
+    public boolean isAdm() {
+        return adm;
+    }
+
+    public String getDataCriacao() {
+        return dataCriacao;
+    }
+
+    public String getDataModificacao() {
+        return dataModificacao;
+    }
+
+    
 }

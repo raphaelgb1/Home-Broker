@@ -3,7 +3,7 @@ package dao;
 import controller.CrudController;
 
 public class InvestimentoDAO extends CrudController {
-    public int id;
+public int id;
     public int conta;
     public double totalInvestido;
     public double lucroPrejuizo;
