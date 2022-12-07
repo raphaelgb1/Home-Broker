@@ -13,10 +13,16 @@ public class DBConnectionController {
     private DBConnectionDAO getDbConn() {
         return this.dbConnectionDAO;
     }
-    
+
     public  ResultSet execute (String sql) {
         DBConnectionDAO dbConnectionDAO = getDbConn();
         ResultSet resultDB = dbConnectionDAO.execute(sql);
+        return resultDB;
+    }
+
+    public int executeInsert (String sql) {
+        DBConnectionDAO dbConnectionDAO = getDbConn();
+        int resultDB = dbConnectionDAO.update(sql);
         return resultDB;
     }
 
@@ -107,5 +113,9 @@ public class DBConnectionController {
         } catch (Exception err) {
             throw err;
         }
+    }
+
+    public void close () {
+        dbConnectionDAO.close();
     }
 }

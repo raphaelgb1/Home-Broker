@@ -25,6 +25,10 @@ public class ContaDAO {
         this.dataModificacao = dataModificacao;
     }
 
+    public double getSaldo() {
+      return saldo;
+    }
+
     public boolean setSaldo (double saldo) {
         this.saldo = saldo;
         return true;

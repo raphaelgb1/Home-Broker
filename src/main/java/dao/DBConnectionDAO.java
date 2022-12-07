@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class DBConnectionDAO {
+
     private static Connection open() {
         
         try {
@@ -18,6 +19,15 @@ public class DBConnectionDAO {
             System.out.println(err.getMessage());
             return null;
         }
+    }
+
+    public void close () {
+        try {
+            Connection connection = open();
+            connection.close();
+        } catch (SQLException err) {
+            System.out.println(err.getMessage());
+        }    
     }
 
 
@@ -49,7 +59,6 @@ public class DBConnectionDAO {
                 while(aux.next())
                     result = aux.getInt("ID");
             } 
-            
             return result;
         } catch (SQLException err) {
             System.out.println(err.getMessage());

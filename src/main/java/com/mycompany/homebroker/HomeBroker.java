@@ -14,15 +14,18 @@ import controller.OperacoesContaController;
 import controller.PrecoAtivosController;
 import dao.AtivosDAO;
 import dao.ClienteDAO;
+import dao.CobrancaDAO;
 import dao.ContaDAO;
 import dao.InvestimentoDAO;
 import dao.OperacoesContaDAO;
 import dao.OrdemDAO;
 
 import java.io.FileOutputStream;
+import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -47,18 +50,18 @@ public class HomeBroker {
 
         ClienteController clienteController = new ClienteController();
         ContaController contaController = new ContaController();
+        OperacoesContaController operacoesContaController = new OperacoesContaController();
+        InvestimentoController investimentoController = new InvestimentoController();
         Set<ClienteDAO> vetorCliente = new LinkedHashSet<>();
         Set<ContaDAO> vetorConta = new LinkedHashSet<>();
         Set<OperacoesContaDAO> vetorOperacoes = new LinkedHashSet<>();
         Map<String,String> objUpdate = new LinkedHashMap<String,String>();
-        // ContaDAO[] vetorConta = new ContaDAO[5];
+
         PrecoAtivosController precoAtivos = new PrecoAtivosController();
         InvestimentoDAO[] vetorInvestimento = new InvestimentoDAO[5];
-        InvestimentoController investimentoController = new InvestimentoController();
         CobrancaDeTaxa cobrancaDeTaxa = new CobrancaDeTaxa();
         OperacoesContaDAO[] vetorOperacoesConta = new OperacoesContaDAO[100];
         DBConnectionController dbConn = new DBConnectionController();
-        OperacoesContaController operacoesContaController = new OperacoesContaController();
         SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy");
         SimpleDateFormat formatBanco = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -92,58 +95,6 @@ public class HomeBroker {
         String menuCOMPerfil = "1 - Visualizar Perfil\n2 - Editar Perfil\n\n0 - Voltar\nDigite uma opção";
         String menuCOMConta = "Saldo: ------\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Mostrar Saldo\n\n0 - Voltar\nDigite uma opção";
         String auxMenu = menuCOMConta;
-        
-        // example.put("NOME", "DEU CERTO");
-        // example.put("LOGIN", "É ISSO AI");
-        
-        // dbConn.update("CLIENTE", "IDCLIENTE = 1", example);
-        // example.clear();
-        // example.put("NOME", "asd");
-        // example.put("ENDERECO", "asd");
-        // example.put("CPF", "asd");
-        // example.put("TELEFONE", "DEU CERTO");
-        // example.put("LOGIN", "DEU CERTO");
-        // example.put("SENHA", "DEU CERTO");
-        // example.put("ADM", "0");
-        // dbConn.insert("CLIENTE", example);
-        // dbConn.update("CLIENTE", "IDCLIENTE", 5, example);
-        
-// //CRIAÇÃO DO USUÁRIO ADM
-//         ClienteDAO clienteAdm = new ClienteDAO();
-//         clienteAdm.newData(idCliente, "adm", "adm", "adm", "adm", "adm", "adm123", true, format.format(calendario.getTime()), null);
-//         clienteController.insert(clienteAdm, vetorCliente);
-//         ContaDAO newContaAdm = new ContaDAO();
-//         newContaAdm.newData(++idConta, clienteAdm.id, 6500000.00, format.format(calendario.getTime()), null);
-//         contaController.insert(newContaAdm, vetorConta);
-//         ContaDAO newContaAdmBolsa = new ContaDAO();
-//         newContaAdmBolsa.newData(++idConta, clienteAdm.id, 1000000, format.format(calendario.getTime()), null);
-//         contaController.insert(newContaAdmBolsa, vetorConta);
-        
-// //CRIACÃO USUÁRIO PROVISÓRIO PARA TESTES
-//         idCliente++;
-//         ClienteDAO clienteUser = new ClienteDAO();
-//         clienteUser.newData(idCliente, "Igor Ramalho", "user", "user", "user", "user", "user", false, format.format(calendario.getTime()), null);
-//         clienteController.insert(clienteUser, vetorCliente);  
-//         ContaDAO newContaUser = new ContaDAO();
-//         newContaUser.newData(++idConta, clienteUser.id, 520000.00, format.format(calendario.getTime()), null);
-//         contaController.insert(newContaUser, vetorConta);
-//         InvestOrdemDAO[] investOrdem = new InvestOrdemDAO[100];
-//         InvestimentoDAO investimento = new InvestimentoDAO();
-//         investimento.newData(++idInvestimento, newContaUser.id, investOrdem, format.format(calendario.getTime()), null);
-//         investimentoController.insert(investimento, vetorInvestimento);
-        
-// //CRIACÃO USUÁRIO PROVISÓRIO PARA TESTES
-//         idCliente++;
-//         ClienteDAO clienteUser2 = new ClienteDAO();
-//         clienteUser2.newData(idCliente, "Raphael Gonzaga", "asd", "asd", "asd", "asd", "asd", false, format.format(calendario.getTime()), null);
-//         clienteController.insert(clienteUser2, vetorCliente);  
-//         ContaDAO newContaUser2 = new ContaDAO();
-//         newContaUser2.newData(++idConta, clienteUser2.id, 520000.00, format.format(calendario.getTime()), null);
-//         contaController.insert(newContaUser2, vetorConta);
-//         InvestOrdemDAO[] investOrdem2 = new InvestOrdemDAO[100];
-//         InvestimentoDAO investimento2 = new InvestimentoDAO();
-//         investimento2.newData(++idInvestimento, newContaUser2.id, investOrdem2, format.format(calendario.getTime()), null);
-//         investimentoController.insert(investimento2, vetorInvestimento);
   
         try {
             do {      
@@ -168,23 +119,49 @@ public class HomeBroker {
                             //ROTINA DE COBRANÇA DE TAXA DE MANUTENÇÃO
                             String dataAtualStr = formatDate.format(calendario.getTime());
                             if(calendario.get(calendario.DAY_OF_MONTH)== 15) {
-                                boolean verifyPayment = true;
-                                for (OperacoesContaDAO element : vetorOperacoesConta) {
-                                    if(element != null){
-                                        Date auxDate = format.parse(element.dataCriacao);
-                                        if(formatDate.format(auxDate).hashCode() == formatDate.format(calendario.getTime()).hashCode() 
-                                            && element.tipo == 4 && element.valor == 20.0
-                                            && element.contaTransferencia == contaAdm.id){
-                                            verifyPayment = false;
-                                            break;
-                                        }
+
+                                Map result = cobrancaDeTaxa.getIds(calendario);
+                                Map<String, String> aux = new LinkedHashMap<String, String>();
+                                Set<CobrancaDAO> auxUser = new LinkedHashSet<>();
+                                Set<CobrancaDAO> auxAdm = new LinkedHashSet<>();
+                                Iterator it = result.entrySet().iterator();
+                                Map.Entry elements = null;
+                                while(it.hasNext()) {
+                                    elements = (Map.Entry)it.next();
+                                    String value = elements.getValue().toString();
+                                    int id = Integer.parseInt(value);
+                                    ContaDAO contaCobranca = contaController.getContaUser(id, vetorConta);
+                                    
+                                    if (contaCobranca == null) {
+                                        continue;
                                     }
+                                    
+                                    CobrancaDAO taxaUsuario = new CobrancaDAO();                            
+                                    CobrancaDAO taxaAdm = new CobrancaDAO();
+
+                                    double saldo = operacoesContaController.depositoSaque(contaCobranca.getSaldo(), 20, false);
+                                    aux.put(value, Double.toString(saldo));
+                                    taxaUsuario.newData(contaCobranca.id, contaAdm.id, saldo);
+                                    contaCobranca.setSaldo(saldo);
+
+                                    objUpdate.put("SALDO", Double.toString(saldo));
+                                    dbConn.update("CONTA", "IDCONTA", contaCobranca.id, objUpdate);
+                    
+                                    saldo = operacoesContaController.depositoSaque(contaAdm.getSaldo(), 20, true);
+                                    taxaAdm.newData(contaAdm.id, contaCobranca.id, saldo);
+                                    objUpdate.put("SALDO", Double.toString(saldo));
+                                    dbConn.update("CONTA", "IDCONTA", contaAdm.id, objUpdate);
+                                    contaAdm.setSaldo(saldo);
+
+                                    auxUser.add(taxaUsuario);
+                                    auxAdm.add(taxaAdm);        
                                 }
-                                if(verifyPayment){
-                                    idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, idOperacoesConta, vetorOperacoesConta, calendario);
+                                
+                                    cobrancaDeTaxa.cobrarTaxa(calendario, auxUser);
+                                    cobrancaDeTaxa.cobrarTaxa(calendario, auxAdm);
                                     JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
-                                }
-                            }          
+                            }
+                                
        
                             op =  Integer.parseInt(JOptionPane.showInputDialog(dataAtualStr + "\n" + user.nome + "\n\n"+menuADM));
                             switch (op){
@@ -235,13 +212,7 @@ public class HomeBroker {
                                         objUpdate.put("VALOROP", Double.toString(500000));
                                         objUpdate.put("DESCRICAO", "Bônus de Cadastro");
                                         objUpdate.put("DTCRIACAO", formatBanco.format(calendario.getTime()));  
-                                        dbConn.insert("OPERACOES", objUpdate);
-                                        
-
-                                        // InvestOrdemDAO[] newInvestOrdem = new InvestOrdemDAO[100];
-                                        // InvestimentoDAO newInvest = new InvestimentoDAO();
-                                        // newInvest.newData(++idInvestimento, idCont, newInvestOrdem, format.format(calendario.getTime()), null);
-                                        // investimentoController.insert(newInvest, vetorInvestimento);
+                                        dbConn.insert("OPERACOES", objUpdate);                                  
                                         
                                         //DEPOSITO AUTOMATICO DE 20K
                                         resultUser = operacoesContaController.depositoSaque(resultUser, 20000, true);
@@ -481,15 +452,6 @@ public class HomeBroker {
                                                                                     "Valor: " + element.valor + "\n" +
                                                                                 "Saldo Final: R$" + element.saldoFinal + "\n------------------------------\n";
                                                                     }
-
-                                                                    // String arquivoPdf = "arquivo.pdf";
-                                                                    // PdfWriter.getInstance(doc, new FileOutputStream(arquivoPdf));
-
-                                                                    // Paragraph par = new Paragraph("Extrato");
-                                                                    // par.setAlignment(1);
-                                                                    // doc.add(par);
-
-                                                                    // PdfPTable table = new PdfPTable(10);
                                                                     
                                                                     if(vetorOperacoes.size() > 3 && opOffset == 0) {
                                                                         int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n1 - Próximo\n0 - Voltar\nPágina: " + (opOffset+1)));
@@ -621,12 +583,52 @@ public class HomeBroker {
                                         calendario.add(GregorianCalendar.DAY_OF_MONTH, 1);
                                         // precoAtivos.atualizaPrecoAtivos(book);
                                         // precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book);
-                                        if(calendario.get(calendario.DAY_OF_MONTH) == 15) {
-                                            idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, idOperacoesConta, vetorOperacoesConta, calendario);
-                                            JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
+                                        if(calendario.get(calendario.DAY_OF_MONTH)== 15) {
+
+                                            Map result = cobrancaDeTaxa.getIds(calendario);
+                                            Map<String, String> aux = new LinkedHashMap<String, String>();
+                                            Set<CobrancaDAO> auxUser = new LinkedHashSet<>();
+                                            Set<CobrancaDAO> auxAdm = new LinkedHashSet<>();
+                                            Iterator it = result.entrySet().iterator();
+                                            Map.Entry elements = null;
+                                            while(it.hasNext()) {
+                                                elements = (Map.Entry)it.next();
+                                                String id = elements.getValue().toString();
+                                                ContaDAO contaCobranca = contaController.getContaUser(1, vetorConta);
+                                                
+                                                if (contaCobranca == null) {
+                                                    continue;
+                                                }
+                                                
+                                                CobrancaDAO taxaUsuario = new CobrancaDAO();                            
+                                                CobrancaDAO taxaAdm = new CobrancaDAO();
+
+                                                double saldo = operacoesContaController.depositoSaque(contaCobranca.getSaldo(), 20, false);
+                                                aux.put(id, Double.toString(saldo));
+                                                taxaUsuario.newData(contaCobranca.id, contaAdm.id, saldo);
+                                                contaCobranca.setSaldo(saldo);
+
+                                                objUpdate.put("SALDO", Double.toString(saldo));
+                                                dbConn.close();
+                                                dbConn.update("CONTA", "IDCONTA", Integer.parseInt(id), objUpdate);
+                                
+                                                saldo = operacoesContaController.depositoSaque(contaAdm.getSaldo(), 20, true);
+                                                taxaAdm.newData(contaAdm.id, contaCobranca.id, saldo);
+                                                objUpdate.put("SALDO", Double.toString(saldo));
+                                                dbConn.update("CONTA", "IDCONTA", contaAdm.id, objUpdate);
+                                                contaAdm.setSaldo(saldo);
+
+                                                auxUser.add(taxaUsuario);
+                                                auxAdm.add(taxaAdm);        
+                                            }
+                                            
+                                                cobrancaDeTaxa.cobrarTaxa(calendario, auxUser);
+                                                cobrancaDeTaxa.cobrarTaxa(calendario, auxAdm);
+                                                JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
                                         }
                                      }
                                 break;
+
                                 case 7://dividendos
                                     // int id_Ordem = Integer.parseInt(JOptionPane.showInputDialog(book.Ativos_book() + "\n\nQual \"ID\" do ativo:"));
                                     do {
@@ -677,6 +679,7 @@ public class HomeBroker {
                                         }
                                     } while(opUpdate != 1);
                                 break;
+
                                 case 8://ORDEM****************************************
                                     //CRIAR AQUI O BOOKING DE OFERTAS
                                     OrdemDAO Ordem = new OrdemDAO(idOrdem++);
@@ -764,13 +767,7 @@ public class HomeBroker {
                                         // idOperacoesConta = operacoesContaController.newOperation(pagador, recebedor, vetorOperacoesConta, idOperacoesConta, descricao, calendario, valor, resultBolsa, true);                     
                                         // JOptionPane.showMessageDialog(null, "Ordem de compra efetuada");
                                     }
-                                    
-                                    // ContaDAO newCOnta = contaAdm.returnClone();
-                                    // Ordem.setConta(newCOnta);
-                                    // InvestOrdemDAO investOr = new InvestOrdemDAO();
-                                    // investOr.newData(Ordem);
-                                    // contaInvest.setInvestimentoOrdem(investOr);
-                                    
+                                                                     
                                 break;
                             } 
                         } while (op != 0);
@@ -789,22 +786,45 @@ public class HomeBroker {
                             
                             //ROTINA DE COBRANÇA DE TAXA DE MANUTENÇÃO
                             if(calendario.get(calendario.DAY_OF_MONTH)== 15) {
-                                boolean verifyPayment = true;
-                                for (OperacoesContaDAO element : vetorOperacoesConta) {
-                                    if(element != null){
-                                        Date auxDate = format.parse(element.dataCriacao);
-                                        if(formatDate.format(auxDate).hashCode() == formatDate.format(calendario.getTime()).hashCode() 
-                                            && element.tipo == 4 && element.valor == 20.0 && element.conta == conta.id
-                                            && element.contaTransferencia == contaAdm.id){
-                                            verifyPayment = false;
-                                            break;
-                                        }
+
+                                Map result = cobrancaDeTaxa.getIds(calendario);
+                                Map<String, String> aux = new LinkedHashMap<String, String>();
+                                Set<CobrancaDAO> auxUser = new LinkedHashSet<>();
+                                Iterator it = result.entrySet().iterator();
+                                Map.Entry elements = null;
+                                while(it.hasNext()) {
+                                    elements = (Map.Entry)it.next();
+                                    String value = elements.getValue().toString();
+                                    int id = Integer.parseInt(value);
+                                    ContaDAO contaCobranca = contaController.getContaUser(id, vetorConta);
+                                    
+                                    if (contaCobranca == null) {
+                                        continue;
                                     }
+                                    
+                                    CobrancaDAO taxaUsuario = new CobrancaDAO();                            
+                                    CobrancaDAO taxaAdm = new CobrancaDAO();
+
+                                    double saldo = operacoesContaController.depositoSaque(contaCobranca.getSaldo(), 20, false);
+                                    aux.put(value, Double.toString(saldo));
+                                    taxaUsuario.newData(contaCobranca.id, contaAdm.id, saldo);
+                                    contaCobranca.setSaldo(saldo);
+
+                                    objUpdate.put("SALDO", Double.toString(saldo));
+                                    dbConn.update("CONTA", "IDCONTA", contaCobranca.id, objUpdate);
+                    
+                                    saldo = operacoesContaController.depositoSaque(contaAdm.getSaldo(), 20, true);
+                                    taxaAdm.newData(contaAdm.id, contaCobranca.id, saldo);
+                                    objUpdate.put("SALDO", Double.toString(saldo));
+                                    dbConn.update("CONTA", "IDCONTA", contaAdm.id, objUpdate);
+                                    contaAdm.setSaldo(saldo);
+
+                                    auxUser.add(taxaUsuario);
+                                    auxUser.add(taxaAdm);        
                                 }
-                                if(verifyPayment){
-                                    idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, idOperacoesConta, vetorOperacoesConta, calendario);
+                                
+                                    cobrancaDeTaxa.cobrarTaxa(calendario, auxUser);
                                     JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
-                                }
                             }
                             
                             //ROTINA ATUALIZAÇÃO DE LUCRO
@@ -1220,12 +1240,6 @@ public class HomeBroker {
                                         // JOptionPane.showMessageDialog(null, "Ordem de compra efetuada");
                                     }
                                     
-                                    // ContaDAO newCOnta = conta.returnClone();
-                                    // Ordem.setConta(newCOnta);
-                                    // InvestOrdemDAO investOr = new InvestOrdemDAO();
-                                    // investOr.newData(Ordem);
-                                    // contaInvest.setInvestimentoOrdem(investOr);
-                                    
                                 break;
                                 
                                 case 5://INCREMENTAR DIAS
@@ -1248,8 +1262,44 @@ public class HomeBroker {
                                         calendario.add(GregorianCalendar.DAY_OF_MONTH, 1);
                                         // precoAtivos.atualizaPrecoAtivos(book);
                                         // precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book);
-                                        if(calendario.get(calendario.DAY_OF_MONTH) == 15) {
-                                            idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, idOperacoesConta, vetorOperacoesConta, calendario);
+                                        if(calendario.get(calendario.DAY_OF_MONTH)== 15) {
+
+                                            Map<String, Integer> result = cobrancaDeTaxa.getIds(calendario);
+                                            Map<String, String> aux = new LinkedHashMap<String, String>();
+                                            Set<CobrancaDAO> auxUser = new LinkedHashSet<>();
+                                            Iterator it = result.entrySet().iterator();
+                                            Map.Entry elements = null;
+                                            while(it.hasNext()) {
+                                                elements = (Map.Entry)it.next();
+                                                String value = elements.getValue().toString();
+                                                int id = Integer.parseInt(value);
+                                                ContaDAO contaCobranca = contaController.getContaUser(id, vetorConta);
+                                                
+                                                if (contaCobranca == null) {
+                                                    continue;
+                                                }
+                                                
+                                                CobrancaDAO taxaUsuario = new CobrancaDAO();                            
+                                                CobrancaDAO taxaAdm = new CobrancaDAO();
+
+                                                double saldo = operacoesContaController.depositoSaque(contaCobranca.getSaldo(), 20, false);
+                                                aux.put(value, Double.toString(saldo));
+                                                taxaUsuario.newData(contaCobranca.id, contaAdm.id, saldo);
+                                                contaCobranca.setSaldo(saldo);
+
+                                                objUpdate.put("SALDO", Double.toString(saldo));
+                                                dbConn.update("CONTA", "IDCONTA", contaCobranca.id, objUpdate);
+                                
+                                                saldo = operacoesContaController.depositoSaque(contaAdm.getSaldo(), 20, true);
+                                                taxaAdm.newData(contaAdm.id, contaCobranca.id, saldo);
+                                                objUpdate.put("SALDO", Double.toString(saldo));
+                                                dbConn.update("CONTA", "IDCONTA", contaAdm.id, objUpdate);
+                                                contaAdm.setSaldo(saldo);
+
+                                                auxUser.add(taxaUsuario);
+                                                auxUser.add(taxaAdm);        
+                                            }
+                                            cobrancaDeTaxa.cobrarTaxa(calendario, auxUser);
                                             JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
                                         }
                                      }
