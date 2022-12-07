@@ -6,8 +6,14 @@ package controller;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import javax.swing.JOptionPane;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -105,6 +111,8 @@ public class OperacoesContaController extends CrudController {
             OperacoesContaDAO pagador = new OperacoesContaDAO();
             OperacoesContaDAO recebedor = new OperacoesContaDAO();  
             
+            pagador.newData(0, 0, 0, 0, 0, 0, 0, " ", " ", " ");
+            recebedor.newData(0, 0, 0, 0, 0, 0, 0, " ", " ", " ");
             pagador.newData(0, 0, 0, 0, 0, 0, 0, " ", " ", " ");
             recebedor.newData(0, 0, 0, 0, 0, 0, 0, " ", " ", " ");
             insert(pagador, vetorOperacoesConta);
