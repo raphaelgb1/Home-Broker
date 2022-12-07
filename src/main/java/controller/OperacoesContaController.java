@@ -34,7 +34,7 @@ public class OperacoesContaController extends CrudController {
 
         Set<OperacoesContaDAO> obj = new LinkedHashSet<>();
         try { 
-            String sql = "SELECT *, ROW_NUMBER() OVER () AS PAG FROM OPERACOES WHERE IDCONTA = " + id + " AND DTCRIACAO BETWEEN DATE('"
+            String sql = "SELECT * FROM OPERACOES WHERE IDCONTA = " + id + " AND DTCRIACAO BETWEEN DATE('"
                         + dtinicial + "') AND DATE('" + dtfinal + "') ORDER BY DTCRIACAO DESC LIMIT 5 OFFSET " + offset;
             ResultSet result = dbConnectionController.execute(sql);
             while(result.next()) {

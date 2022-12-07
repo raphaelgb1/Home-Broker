@@ -10,7 +10,7 @@ import controller.CrudController;
  *
  * @author rapha
  */
-public class ContaDAO extends CrudController {
+public class ContaDAO {
     public int id;
     public int cliente;
     public double saldo;
