@@ -8,6 +8,7 @@ import dao.ContaDAO;
 import dao.OperacoesContaDAO;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
+import java.util.Set;
 
 /**
  *
@@ -19,18 +20,20 @@ public class CobrancaDeTaxa {
     OperacoesContaController operacoesContaController = new OperacoesContaController();
     SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
     
-    public int cobrarTaxa (ContaDAO[] vetorConta, int idOperacoesConta, OperacoesContaDAO[] vetorOperacoesConta, GregorianCalendar calendario) {
+    public int cobrarTaxa (Set<ContaDAO> vetor, int idOperacoesConta, OperacoesContaDAO[] vetorOperacoesConta, GregorianCalendar calendario) {
+        
+        ContaDAO adm = contaController.getContaAdm(vetor);
         try {           
-            for (ContaDAO element : vetorConta) {
+            for (ContaDAO element : vetor) {
                 if(element != null && element.id > 2) {    
                     double userResult = operacoesContaController.depositoSaque(element.saldo, 20, false);
-                    double admResult = operacoesContaController.depositoSaque(vetorConta[0].saldo, 20, true);
+                    double admResult = operacoesContaController.depositoSaque(adm.saldo, 20, true);
 
                     boolean userContaUpdate = element.setSaldo(userResult);
-                    boolean admContaUpdate =  vetorConta[0].setSaldo(admResult);
+                    boolean admContaUpdate =  adm.setSaldo(admResult);
 
                     if(userContaUpdate && admContaUpdate){
-                       idOperacoesConta = operacoesContaController.newOperation(element, vetorConta[0], vetorOperacoesConta, idOperacoesConta, null, calendario, 20, admResult,true);
+                       idOperacoesConta = operacoesContaController.newOperation(element, adm, vetorOperacoesConta, idOperacoesConta, null, calendario, 20, admResult,true);
                     } 
                 }
             }

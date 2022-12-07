@@ -9,15 +9,6 @@ package utils;
  * @author rapha
  */
 public class UtilsObj {
-    public int vetorLength (Object[] vetor){
-        int count = 0;
-        for (Object element : vetor) {
-            if(element != null){
-                count++;
-            }
-        }
-        return count;
-    }
     
     public int verifyObjectIsVoid (Object[] vetor) {
         try {

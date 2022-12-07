@@ -1,12 +1,10 @@
 package controller;
 
-import javax.lang.model.element.Element;
-import javax.swing.JOptionPane;
+import java.util.Set;
 
 import dao.AtivosDAO;
 import dao.BookDAO;
 import dao.ContaDAO;
-import dao.InvestOrdemDAO;
 import dao.InvestimentoDAO;
 import dao.OrdemDAO;
 import utils.UtilsObj;
@@ -30,7 +28,7 @@ public class PrecoAtivosController {
         }
     }
 
-    public void atualizaTotalInvestido (ContaDAO[] conta, InvestimentoDAO[] vetorInvestimento, BookDAO ativos) {
+    public void atualizaTotalInvestido (Set<ContaDAO> conta, InvestimentoDAO[] vetorInvestimento, BookDAO ativos) {
         for (ContaDAO element : conta) {
             double totalInvestido = 0;
             double lucroPreju = 0;

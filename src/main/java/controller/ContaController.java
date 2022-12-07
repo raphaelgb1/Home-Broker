@@ -4,6 +4,11 @@
  */
 package controller;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import javax.swing.JOptionPane;
 import dao.ContaDAO;
 
 /**
@@ -11,42 +16,78 @@ import dao.ContaDAO;
  * @author rapha
  */
 public class ContaController extends CrudController {
-    
-    public int returnIndex (int id, ContaDAO[] vetor){
+
+    DBConnectionController dbConnectionController = new DBConnectionController();
+
+    public Set search() {
+
+        Set<ContaDAO> obj = new LinkedHashSet<>();
         try {
-            for (int x = 0; x < vetor.length; x++) {
-                if(vetor[x] != null) {
-                    if(vetor[x].id == id){
-                        return x;
-                    }
-                }            
+            String sql = "SELECT * FROM CONTA";
+            ResultSet result = dbConnectionController.execute(sql);
+            while(result.next()) {
+                ContaDAO cliente = new ContaDAO();
+                cliente.newData(
+                      result.getInt("IDCONTA")
+                    , result.getInt("IDCLIENTE")
+                    , result.getDouble("SALDO")
+                    , result.getString("DTCRIACAO")
+                    , result.getString("DTMODIFICACAO")
+                );
+                obj.add(cliente);
             }
-            return -1;
-        } catch (Exception err) {
-            return -2;
+            return obj;
+        } catch (SQLException err) {
+            JOptionPane.showMessageDialog(null, err.getMessage());
+            throw null;
         }
+
     }
-    
-    public ContaDAO returnObjectById (int id, ContaDAO[] vetor){
+
+    public ContaDAO getContaAdm (Set<ContaDAO> vetor) {
         try {
-            for (ContaDAO obj : vetor) {
-                if(obj != null) {
-                    if(obj.id == id){
-                        return obj;
-                    }
-                }                      
+            for (ContaDAO element : vetor) {
+                if(element.id == 1) {
+                    return element;
+                }
             }
             return null;
         } catch (Exception err) {
+            throw err;
+        }
+    }
+
+    public ContaDAO getContaBolsa (Set<ContaDAO> vetor) {
+        try {
+            for (ContaDAO element : vetor) {
+                if(element.id == 2) {
+                    return element;
+                }
+            }
             return null;
+        } catch (Exception err) {
+            throw err;
+        }
+    }
+
+    public ContaDAO getContaUser (int id, Set<ContaDAO> vetor) {
+        try {
+            for (ContaDAO element : vetor) {
+                if(element.id == id) {
+                    return element;
+                }
+            }
+            return null;
+        } catch (Exception err) {
+            throw err;
         }
     }
     
-    public ContaDAO returnContaByCliente (int cliente, ContaDAO[] vetor) {
+    public ContaDAO getContaByCliente (int id, Set<ContaDAO> vetor) {
         try {
             for (ContaDAO obj : vetor) {
                 if(obj != null) {
-                    if(obj.cliente == cliente){
+                    if(obj.cliente == id){
                         return obj;
                     }
                 }                      

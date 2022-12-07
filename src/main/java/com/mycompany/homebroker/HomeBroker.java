@@ -8,6 +8,7 @@ package com.mycompany.homebroker;
 import controller.ClienteController;
 import controller.CobrancaDeTaxa;
 import controller.ContaController;
+import controller.DBConnectionController;
 import controller.InvestimentoController;
 import controller.OperacoesContaController;
 import controller.PrecoAtivosController;
@@ -19,13 +20,23 @@ import dao.InvestimentoDAO;
 import dao.OperacoesContaDAO;
 import dao.OrdemDAO;
 
+import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 // import javax.lang.model.util.ElementScanner14;
 import javax.swing.JOptionPane;
-import utils.UtilsObj;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+
 import dao.BookDAO;
 /**
  *
@@ -37,23 +48,32 @@ public class HomeBroker {
 
         ClienteController clienteController = new ClienteController();
         ContaController contaController = new ContaController();
-        ClienteDAO[] vetorCliente = new ClienteDAO[5];
-        ContaDAO[] vetorConta = new ContaDAO[5];
+        Set<ClienteDAO> vetorCliente = new LinkedHashSet<>();
+        Set<ContaDAO> vetorConta = new LinkedHashSet<>();
+        Set<OperacoesContaDAO> vetorOperacoes = new LinkedHashSet<>();
+        Map<String,String> objUpdate = new LinkedHashMap<String,String>();
+        // ContaDAO[] vetorConta = new ContaDAO[5];
         PrecoAtivosController precoAtivos = new PrecoAtivosController();
         InvestimentoDAO[] vetorInvestimento = new InvestimentoDAO[5];
         InvestimentoController investimentoController = new InvestimentoController();
         CobrancaDeTaxa cobrancaDeTaxa = new CobrancaDeTaxa();
         OperacoesContaDAO[] vetorOperacoesConta = new OperacoesContaDAO[100];
-        UtilsObj utils = new UtilsObj();
+        DBConnectionController dbConn = new DBConnectionController();
         OperacoesContaController operacoesContaController = new OperacoesContaController();
         SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat formatBanco = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         GregorianCalendar calendario = new GregorianCalendar();
+        Document doc = new Document();
 
         BookDAO book = new BookDAO();
         book.newData(formatDate.format(calendario.getTime()));
+        
         precoAtivos.atualizaPrecoAtivos(book);
-
+        
+        vetorCliente = clienteController.search();
+        vetorConta = contaController.search();
+    
         int op = 0;
         int opUser = 0;
         int opView = 0;
@@ -62,10 +82,7 @@ public class HomeBroker {
         int verify = 0;
         int idOrdem = 0;
         
-        int idCliente = 1;
-        int idConta = 0;
         int idOperacoesConta = 0;
-        int idInvestimento = 0;
         
         boolean verificador = false;
         
@@ -77,59 +94,73 @@ public class HomeBroker {
         String menuCOMConta = "Saldo: ------\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Mostrar Saldo\n\n0 - Voltar\nDigite uma opção";
         String auxMenu = menuCOMConta;
         
-//CRIAÇÃO DO USUÁRIO ADM
-        ClienteDAO clienteAdm = new ClienteDAO();
-        clienteAdm.newData(idCliente, "adm", "adm", "adm", "adm", "adm", "adm123", true, format.format(calendario.getTime()), null);
-        clienteController.insert(clienteAdm, vetorCliente);
-        ContaDAO newContaAdm = new ContaDAO();
-        newContaAdm.newData(++idConta, clienteAdm.id, 6500000.00, format.format(calendario.getTime()), null);
-        contaController.insert(newContaAdm, vetorConta);
-        ContaDAO newContaAdmBolsa = new ContaDAO();
-        newContaAdmBolsa.newData(++idConta, clienteAdm.id, 1000000, format.format(calendario.getTime()), null);
-        contaController.insert(newContaAdmBolsa, vetorConta);
+        // example.put("NOME", "DEU CERTO");
+        // example.put("LOGIN", "É ISSO AI");
         
-//CRIACÃO USUÁRIO PROVISÓRIO PARA TESTES
-        idCliente++;
-        ClienteDAO clienteUser = new ClienteDAO();
-        clienteUser.newData(idCliente, "Igor Ramalho", "user", "user", "user", "user", "user", false, format.format(calendario.getTime()), null);
-        clienteController.insert(clienteUser, vetorCliente);  
-        ContaDAO newContaUser = new ContaDAO();
-        newContaUser.newData(++idConta, clienteUser.id, 520000.00, format.format(calendario.getTime()), null);
-        contaController.insert(newContaUser, vetorConta);
-        InvestOrdemDAO[] investOrdem = new InvestOrdemDAO[100];
-        InvestimentoDAO investimento = new InvestimentoDAO();
-        investimento.newData(++idInvestimento, newContaUser.id, investOrdem, format.format(calendario.getTime()), null);
-        investimentoController.insert(investimento, vetorInvestimento);
+        // dbConn.update("CLIENTE", "IDCLIENTE = 1", example);
+        // example.clear();
+        // example.put("NOME", "asd");
+        // example.put("ENDERECO", "asd");
+        // example.put("CPF", "asd");
+        // example.put("TELEFONE", "DEU CERTO");
+        // example.put("LOGIN", "DEU CERTO");
+        // example.put("SENHA", "DEU CERTO");
+        // example.put("ADM", "0");
+        // dbConn.insert("CLIENTE", example);
+        // dbConn.update("CLIENTE", "IDCLIENTE", 5, example);
         
-//CRIACÃO USUÁRIO PROVISÓRIO PARA TESTES
-        idCliente++;
-        ClienteDAO clienteUser2 = new ClienteDAO();
-        clienteUser2.newData(idCliente, "Raphael Gonzaga", "asd", "asd", "asd", "asd", "asd", false, format.format(calendario.getTime()), null);
-        clienteController.insert(clienteUser2, vetorCliente);  
-        ContaDAO newContaUser2 = new ContaDAO();
-        newContaUser2.newData(++idConta, clienteUser2.id, 520000.00, format.format(calendario.getTime()), null);
-        contaController.insert(newContaUser2, vetorConta);
-        InvestOrdemDAO[] investOrdem2 = new InvestOrdemDAO[100];
-        InvestimentoDAO investimento2 = new InvestimentoDAO();
-        investimento2.newData(++idInvestimento, newContaUser2.id, investOrdem2, format.format(calendario.getTime()), null);
-        investimentoController.insert(investimento2, vetorInvestimento);
+// //CRIAÇÃO DO USUÁRIO ADM
+//         ClienteDAO clienteAdm = new ClienteDAO();
+//         clienteAdm.newData(idCliente, "adm", "adm", "adm", "adm", "adm", "adm123", true, format.format(calendario.getTime()), null);
+//         clienteController.insert(clienteAdm, vetorCliente);
+//         ContaDAO newContaAdm = new ContaDAO();
+//         newContaAdm.newData(++idConta, clienteAdm.id, 6500000.00, format.format(calendario.getTime()), null);
+//         contaController.insert(newContaAdm, vetorConta);
+//         ContaDAO newContaAdmBolsa = new ContaDAO();
+//         newContaAdmBolsa.newData(++idConta, clienteAdm.id, 1000000, format.format(calendario.getTime()), null);
+//         contaController.insert(newContaAdmBolsa, vetorConta);
+        
+// //CRIACÃO USUÁRIO PROVISÓRIO PARA TESTES
+//         idCliente++;
+//         ClienteDAO clienteUser = new ClienteDAO();
+//         clienteUser.newData(idCliente, "Igor Ramalho", "user", "user", "user", "user", "user", false, format.format(calendario.getTime()), null);
+//         clienteController.insert(clienteUser, vetorCliente);  
+//         ContaDAO newContaUser = new ContaDAO();
+//         newContaUser.newData(++idConta, clienteUser.id, 520000.00, format.format(calendario.getTime()), null);
+//         contaController.insert(newContaUser, vetorConta);
+//         InvestOrdemDAO[] investOrdem = new InvestOrdemDAO[100];
+//         InvestimentoDAO investimento = new InvestimentoDAO();
+//         investimento.newData(++idInvestimento, newContaUser.id, investOrdem, format.format(calendario.getTime()), null);
+//         investimentoController.insert(investimento, vetorInvestimento);
+        
+// //CRIACÃO USUÁRIO PROVISÓRIO PARA TESTES
+//         idCliente++;
+//         ClienteDAO clienteUser2 = new ClienteDAO();
+//         clienteUser2.newData(idCliente, "Raphael Gonzaga", "asd", "asd", "asd", "asd", "asd", false, format.format(calendario.getTime()), null);
+//         clienteController.insert(clienteUser2, vetorCliente);  
+//         ContaDAO newContaUser2 = new ContaDAO();
+//         newContaUser2.newData(++idConta, clienteUser2.id, 520000.00, format.format(calendario.getTime()), null);
+//         contaController.insert(newContaUser2, vetorConta);
+//         InvestOrdemDAO[] investOrdem2 = new InvestOrdemDAO[100];
+//         InvestimentoDAO investimento2 = new InvestimentoDAO();
+//         investimento2.newData(++idInvestimento, newContaUser2.id, investOrdem2, format.format(calendario.getTime()), null);
+//         investimentoController.insert(investimento2, vetorInvestimento);
   
         try {
-            do {
-                
+            do {      
             //AUTENTICAÇÃO DE SESSÃO
             String userName = JOptionPane.showInputDialog("Bem vindo ao HOME BROKER\n\n0 - Sair\nPara começar, insira seu Usuário");
             if(userName.hashCode() == "0".hashCode()){
                 opUser = 1;
                 break;
             }
-            ClienteDAO user =clienteController.verifyUserName(vetorCliente, userName);
+            ClienteDAO user = clienteController.verifyUserName(vetorCliente, userName);
             if(user != null){
                 String password = JOptionPane.showInputDialog("Insira sua senha");
                 if(user.senha.hashCode() == password.hashCode()){
 
-                    ContaDAO contaAdm = vetorConta[0];
-                    ContaDAO bolsa = vetorConta[1];
+                    ContaDAO contaAdm = contaController.getContaAdm(vetorConta);
+                    ContaDAO bolsa = contaController.getContaBolsa(vetorConta);
                     
                     if(user.adm) { 
                         //MENU DO USUÁRIO ADMINISTRADOR
@@ -162,60 +193,82 @@ public class HomeBroker {
                                     op = Integer.parseInt(JOptionPane.showInputDialog("Você Quer Sair?\n 1 - Sim\n 2 - Não"));
                                     op = (op == 1) ? 0 : 1;
                                 break;
+
                                 case 1://ADICIONAR USUÁRIO
-                                    if(utils.vetorLength(vetorCliente) != 5) {   
-                                        String name     = JOptionPane.showInputDialog("Digite um nome");
-                                        String login    = JOptionPane.showInputDialog("Escolha o usuário");
-                                        String pass     = JOptionPane.showInputDialog("Escolha uma senha");
-                                        String adress   = JOptionPane.showInputDialog("Digite o Endereço");
-                                        String cpf      = JOptionPane.showInputDialog("Digite o CPF");
-                                        String phone    = JOptionPane.showInputDialog("Digite o Telefone");
-                                        String creation = format.format(calendario.getTime());
-                                        ClienteDAO newClient = new ClienteDAO();
-                                        newClient.newData(++idCliente, name, adress, cpf, phone, login, pass, false, creation, null);
-                                        if (clienteController.insert(newClient, vetorCliente)) {
-                                            //CRIAÇÃO DE CONTA
-                                            ContaDAO newConta = new ContaDAO();
+                                    if(vetorCliente.size() <= 5) {   
+                                        objUpdate.put("NOME", JOptionPane.showInputDialog("Digite um nome"));
+                                        objUpdate.put("LOGIN", JOptionPane.showInputDialog("Escolha o usuário"));
+                                        objUpdate.put("SENHA", JOptionPane.showInputDialog("Escolha uma senha"));
+                                        objUpdate.put("ENDERECO", JOptionPane.showInputDialog("igite o Endereço"));
+                                        objUpdate.put("CPF", JOptionPane.showInputDialog("Digite o CPF"));
+                                        objUpdate.put("TELEFONE", JOptionPane.showInputDialog("Digite o Telefone"));
+                                        objUpdate.put("DTCRIACAO", format.format(calendario.getTime()));
+                                        int idClient = dbConn.insert("CLIENTE", objUpdate);
+                                        vetorCliente = clienteController.search();
 
-                                            //TRANFERENCIA 500K PARA NOVA CONTA
-                                            double resultAdm = operacoesContaController.depositoSaque(contaAdm.saldo, 500000, false);
-                                            boolean resultaAdmUpdate = contaAdm.setSaldo(resultAdm);
-                                            
-                                            double resultUser = operacoesContaController.depositoSaque(0, 500000, true);
-                                            newConta.newData(++idConta, idCliente, resultUser, creation, null);                                            
-                                            boolean resultaUserInsert = contaController.insert(newConta, vetorConta); 
+                                        //CRIAÇÃO DE CONTA
+                                        objUpdate.put("IDCLIENTE", Integer.toString(idClient));
+                                        int idCont = dbConn.insert("CONTA", objUpdate);
 
-                                            InvestOrdemDAO[] newInvestOrdem = new InvestOrdemDAO[100];
-                                            InvestimentoDAO newInvest = new InvestimentoDAO();
-                                            newInvest.newData(++idInvestimento, newConta.id, newInvestOrdem, format.format(calendario.getTime()), null);
-                                            investimentoController.insert(newInvest, vetorInvestimento);
-                                            
-                                            if(resultaUserInsert && resultaAdmUpdate){
-                                                //DEPOSITO AUTOMATICO DE 20K
-                                                double deposito = operacoesContaController.depositoSaque(newConta.saldo, 20000, true);
-                                                newConta.setSaldo(deposito);
-                                                OperacoesContaDAO opDeposito = new OperacoesContaDAO();
-                                                opDeposito.newData(++idOperacoesConta, newConta.id, contaAdm.id, 2, newConta.saldo,1, "Depósito Automático", 20000, format.format(calendario.getTime()), null);
-                                                operacoesContaController.insert(opDeposito, vetorOperacoesConta);
-                                                idOperacoesConta = operacoesContaController.newOperation(contaAdm, newConta, vetorOperacoesConta, idOperacoesConta, "Transferência Bônus", calendario, 500000, resultUser, false);
-                                                
-                                                JOptionPane.showMessageDialog (null, "Usuário e Conta Criados");
-                                            } else {
-                                                JOptionPane.showMessageDialog (null, "Ocorreu um erro durante a criação da Conta");
-                                            }
-                                        }  else {
-                                            JOptionPane.showMessageDialog (null, "Ocorreu um erro durante a criação do Usuário");
-                                        }
+                                        //TRANFERENCIA 500K PARA NOVA CONTA
+                                        double resultAdm = operacoesContaController.depositoSaque(contaAdm.saldo, 500000, false);
+                                        double resultUser = operacoesContaController.depositoSaque(0, 500000, true); 
+
+                                        objUpdate.put("SALDO", Double.toString(resultAdm));
+                                        dbConn.update("CONTA", "IDCONTA", contaAdm.id, objUpdate);
+
+                                        //REGISTRA OPERAÇÃO
+                                        objUpdate.put("IDCONTA", Integer.toString(contaAdm.id));                                        
+                                        objUpdate.put("IDCONTADEST", Integer.toString(idCont));                                        
+                                        objUpdate.put("OPERACAO", Integer.toString(2));                                        
+                                        objUpdate.put("TIPO", Integer.toString(3));                                        
+                                        objUpdate.put("SALDOFINAL", Double.toString(resultAdm));
+                                        objUpdate.put("VALOROP", Double.toString(500000));
+                                        objUpdate.put("DESCRICAO", "Bônus de Cadastro");
+                                        objUpdate.put("DTCRIACAO", format.format(calendario.getTime()));  
+                                        dbConn.insert("OPERACOES", objUpdate);
+
+                                        objUpdate.put("IDCONTA", Integer.toString(idCont));                                        
+                                        objUpdate.put("IDCONTADEST", Integer.toString(contaAdm.id));                                        
+                                        objUpdate.put("OPERACAO", Integer.toString(1));                                        
+                                        objUpdate.put("TIPO", Integer.toString(3));                                        
+                                        objUpdate.put("SALDOFINAL", Double.toString(resultUser));
+                                        objUpdate.put("VALOROP", Double.toString(500000));
+                                        objUpdate.put("DESCRICAO", "Bônus de Cadastro");
+                                        objUpdate.put("DTCRIACAO", format.format(calendario.getTime()));  
+                                        dbConn.insert("OPERACOES", objUpdate);
+                                        
+
+                                        // InvestOrdemDAO[] newInvestOrdem = new InvestOrdemDAO[100];
+                                        // InvestimentoDAO newInvest = new InvestimentoDAO();
+                                        // newInvest.newData(++idInvestimento, idCont, newInvestOrdem, format.format(calendario.getTime()), null);
+                                        // investimentoController.insert(newInvest, vetorInvestimento);
+                                        
+                                        //DEPOSITO AUTOMATICO DE 20K
+                                        resultUser = operacoesContaController.depositoSaque(resultUser, 20000, true);
+                                        objUpdate.put("SALDO", Double.toString(resultUser));
+                                        dbConn.update("CONTA", "IDCONTA", idCont, objUpdate);
+
+                                        objUpdate.put("IDCONTA", Integer.toString(idCont));                                                                               
+                                        objUpdate.put("OPERACAO", Integer.toString(1));                                        
+                                        objUpdate.put("TIPO", Integer.toString(1));                                        
+                                        objUpdate.put("SALDOFINAL", Double.toString(resultUser));
+                                        objUpdate.put("VALOROP", Double.toString(20000));
+                                        objUpdate.put("DESCRICAO", "Depósito de Cadastro"); 
+                                        objUpdate.put("DTCRIACAO", format.format(calendario.getTime())); 
+                                        dbConn.insert("OPERACOES", objUpdate);
+                                       
+                                        vetorConta = contaController.search();
+                                        JOptionPane.showMessageDialog (null, "Usuário e Conta Criados");    
                                     } else {
                                         JOptionPane.showMessageDialog (null, "Máximo de Usuários Cadastrados, exclua um usuário");
-                                    }
-
-                                    break;
+                                    }     
+                                break;
 
                                 case 2://EDITAR USUÁRIO
                                     do {
                                         opUpdate = 0;
-                                        if(utils.verifyObjectIsVoid(vetorCliente) == 0){
+                                        if(!vetorCliente.isEmpty()){
                                             String auxMenuClienteUpdate = "";
                                             for (ClienteDAO element : vetorCliente) {
                                                 if(element != null){
@@ -232,22 +285,17 @@ public class HomeBroker {
                                                 if(clienteUdpdate.id >= 0) {
                                                     verifySenha = JOptionPane.showInputDialog("Confirme a senha do Administrador");
                                                     if(verifySenha.hashCode() == user.senha.hashCode()){//VERIFICAR SENHA
-                                                        int indice = clienteController.returnIndex(clienteUdpdate.id, vetorCliente); 
-                                                        String nameUpdate   = JOptionPane.showInputDialog("Nome: "     + clienteUdpdate.nome + "\n\nDigite novo Nome");
-                                                        String userUpdate   = JOptionPane.showInputDialog("Usuário: "  + clienteUdpdate.login +"\n\nDigite novo Usuário");
-                                                        String passUpdate   = JOptionPane.showInputDialog("Senha: "    + clienteUdpdate.senha +"\n\nEscolha nova Senha");
-                                                        String adressUpdate = JOptionPane.showInputDialog("Endereço: " + clienteUdpdate.endereco +"\n\nDigite novo Endereço");
-                                                        String cpfUpdate    = JOptionPane.showInputDialog("CPF: "      + clienteUdpdate.CPF +"\n\nDigite novo CPF");
-                                                        String phoneUpdate  = JOptionPane.showInputDialog("Telefone: " + clienteUdpdate.telefone +"\n\nDigite novo Telefone");
-                                                        String update       = format.format(calendario.getTime());
-                                                        ClienteDAO newObj   = new ClienteDAO();
-                                                        newObj.newData(idUpdate, nameUpdate, adressUpdate, cpfUpdate, phoneUpdate, userUpdate, passUpdate, false, clienteUdpdate.dataCriacao, update);
-
-                                                        if(clienteController.update(newObj, vetorCliente, indice)){
-                                                           JOptionPane.showMessageDialog(null,"Atualizado");
-                                                        } else {
-                                                            JOptionPane.showMessageDialog(null,"Ocorreu um erro durante a atualização"); 
-                                                        }
+                    
+                                                        objUpdate.put("NOME", JOptionPane.showInputDialog("Nome: "     + clienteUdpdate.nome + "\n\nDigite novo Nome"));
+                                                        objUpdate.put("LOGIN", JOptionPane.showInputDialog("Usuário: "  + clienteUdpdate.login +"\n\nDigite novo Usuário"));
+                                                        objUpdate.put("SENHA", JOptionPane.showInputDialog("Senha: "    + clienteUdpdate.senha +"\n\nEscolha nova Senha"));
+                                                        objUpdate.put("ENDERECO", JOptionPane.showInputDialog("Endereço: " + clienteUdpdate.endereco +"\n\nDigite novo Endereço"));
+                                                        objUpdate.put("CPF", JOptionPane.showInputDialog("CPF: "      + clienteUdpdate.CPF +"\n\nDigite novo CPF"));
+                                                        objUpdate.put("TELEFONE", JOptionPane.showInputDialog("Telefone: " + clienteUdpdate.telefone +"\n\nDigite novo Telefone"));
+                                                        objUpdate.put("DTMODIFICACAO", format.format(calendario.getTime()));
+                                                        dbConn.update("CLIENTE", "IDCLIENTE", clienteUdpdate.id, objUpdate);
+                                                        vetorCliente = clienteController.search();
+                                                        JOptionPane.showMessageDialog(null,"Perfil Atualizado");
                                                         opUpdate = 1;
                                                     }  else {
                                                         JOptionPane.showMessageDialog(null,"Senha Inválida");
@@ -327,29 +375,24 @@ public class HomeBroker {
                                                 break;
                                             }
 
-                                            int indice = clienteController.returnIndex(idDelete, vetorCliente);
-                                            if(indice >= 0) {
+                                            if(clienteController.verify(idDelete, vetorCliente)) {
                                                     verifySenha = JOptionPane.showInputDialog("Confirme a senha do Administrador");
                                                     if(verifySenha.hashCode() == user.senha.hashCode()){
                                                         
-                                                        ContaDAO contaDel = contaController.returnContaByCliente(idDelete, vetorConta);
-                                                        int indiceConta = contaController.returnIndex(contaDel.id, vetorConta);
-
-                                                        if(contaController.delete(indiceConta, vetorConta) && clienteController.delete(indice, vetorCliente)){
-                                                           JOptionPane.showMessageDialog(null,"Usuário Excluído");
-                                                        } else {
-                                                            JOptionPane.showMessageDialog(null,"Ocorreu um erro durante a exclusão"); 
-                                                        }
+                                                        ContaDAO contaDel = contaController.getContaByCliente(idDelete, vetorConta);
+                                                        dbConn.delete("CONTA", "IDCONTA", contaDel.id);
+                                                        dbConn.delete("CLIENTE", "IDCLIENTE", idDelete);
+                                                        vetorCliente = clienteController.search();
+                                                        vetorConta = contaController.search();
+                                                        JOptionPane.showMessageDialog(null,"Usuário Excluído");
+                                                        
                                                         opDelete = 1;
                                                     } else {
                                                         JOptionPane.showMessageDialog(null,"Senha Inválida");
                                                     }
                                             } else {
-                                                if(indice == -1) {
-                                                    JOptionPane.showMessageDialog(null,"Usuário não encontrado");
-                                                } else {
-                                                    JOptionPane.showMessageDialog(null,"Ocorreu um erro durante a atualização"); 
-                                                }
+
+                                                JOptionPane.showMessageDialog(null,"Usuário não encontrado");
                                             }
                                         } else {
                                             JOptionPane.showMessageDialog(null,"Não há clientes cadastrados");
@@ -386,10 +429,11 @@ public class HomeBroker {
                                                         } 
                                                         contaView = (idViewConta == 1) ? contaAdm : bolsa;
                                                     } else {
-                                                        contaView = contaController.returnContaByCliente(clienteViewConta.id, vetorConta);
+                                                        contaView = contaController.getContaByCliente(clienteViewConta.id, vetorConta);
                                                     }
                                                     opConta = Integer.parseInt(JOptionPane.showInputDialog(menuADMConta));             
                                                 do {
+                                                        internConta = 1;
                                                         switch (opConta){
                                                             case 0:
                                                                 internConta = 0;
@@ -402,39 +446,92 @@ public class HomeBroker {
 
                                                             case 2://EXTRATO
                                                                 int opExtrato = 1;
-                                                                String extrato = "";
+                                                                int opOffset = 0;
+                                                                String dataInicial = JOptionPane.showInputDialog("Digite a data inicial?\n Ex: 01/01/2022\n\n0 - Voltar\nDigite uma opção");
+                                                                String dataFinal = JOptionPane.showInputDialog("Digite a data final?\n Ex: 02/01/2022\n\n0 - Voltar\nDigite uma opção");
                                                                 do{
-                                                                    String dataInicial = JOptionPane.showInputDialog("Digite a data inicial?\n Ex: 01/01/2022\n\n0 - Voltar\nDigite uma opção");
-                                                                    String dataFinal = JOptionPane.showInputDialog("Digite a data final?\n Ex: 02/01/2022\n\n0 - Voltar\nDigite uma opção");
+                                                                    String extrato = "";
                                                                     if(dataInicial.hashCode() == "0".hashCode() || dataFinal.hashCode() == "0".hashCode()) {
                                                                         opExtrato = 0;
                                                                         break;
                                                                     }
                                                                     Date dtinicio = format.parse(dataInicial + " 00:00:00");
-                                                                    Date dtfinal = format.parse(dataFinal + " 23:59:59");
+                                                                    Date dtfinal =  format.parse(dataFinal + " 23:59:59");
+                                                                    if(dataInicial.hashCode() == dataFinal.hashCode()) {
+                                                                        GregorianCalendar aux = new GregorianCalendar();
+                                                                        aux.setTime(dtfinal);
+                                                                        aux.add(GregorianCalendar.DAY_OF_MONTH, 1);
+                                                                        dtfinal = aux.getTime();
+                                                                    } 
+
+                                                                    vetorOperacoes = operacoesContaController.search(contaView.id, opOffset, formatBanco.format(dtinicio), formatBanco.format(dtfinal));
                                                                     ClienteDAO pagador = new ClienteDAO();
                                                                     ContaDAO contaPagador = new ContaDAO();
-                                                                    for (OperacoesContaDAO element : vetorOperacoesConta) {
-                                                                        if(element != null  && element.conta == contaView.id){
-                                                                            if(element.tipo == 5 || element.tipo == 3){
-                                                                                contaPagador = contaController.returnObjectById(element.contaTransferencia, vetorConta);
-                                                                                pagador = clienteController.returnObjectById(contaPagador.cliente, vetorCliente);
-                                                                            }
-                                                                            Date dtExtrato = format.parse(element.dataCriacao);
-                                                                            if(dtExtrato.before(dtfinal) && dtExtrato.after(dtinicio)){
-                                                                                extrato += (element.operacao == 1) ? "Saida\n" : "Entrada\n";
-                                                                                extrato += (element.tipo == 5) ? "Recebido de: " + pagador.nome + "\n" : "";
-                                                                                extrato += (element.tipo == 3) ? "Enviado para: " + pagador.nome + "\n" : "";
-                                                                                extrato += (element.tipo == 1) ? "Tipo: Depósito\n" : (element.tipo == 2) ? "Tipo: Saque\n" 
-                                                                                        : (element.tipo == 3) ? "Tipo: Transferência\n" : (element.tipo == 4) ? "Tipo: Pagamento\n" : "Tipo: Recebimento\n";
-                                                                                extrato += "Data: " + element.dataCriacao + "\n"+
-                                                                                            "Valor: " + element.valor + "\n" +
-                                                                                        "Saldo Final: R$" + element.saldoFinal + "\n------------------------------\n";
-                                                                            }
+                                                                    for (OperacoesContaDAO element : vetorOperacoes) {
+                                                                        if(element.tipo == 5 || element.tipo == 3){
+                                                                            contaPagador = contaController.getContaUser(element.contaTransferencia, vetorConta);
+                                                                            pagador = clienteController.returnObjectById(contaPagador.cliente, vetorCliente);
+                                                                        }
+
+                                                                        extrato += (element.operacao == 1) ? "Saida\n" : "Entrada\n";
+                                                                        extrato += (element.tipo == 5) ? "Recebido de: " + pagador.nome + "\n" : "";
+                                                                        extrato += (element.tipo == 3) ? "Enviado para: " + pagador.nome + "\n" : "";
+                                                                        extrato += (element.tipo == 1) ? "Tipo: Depósito\n" : (element.tipo == 2) ? "Tipo: Saque\n" 
+                                                                                : (element.tipo == 3) ? "Tipo: Transferência\n" : (element.tipo == 4) ? "Tipo: Pagamento\n" : "Tipo: Recebimento\n";
+                                                                        extrato += "Data: " + element.dataCriacao + "\n"+
+                                                                                    "Valor: " + element.valor + "\n" +
+                                                                                "Saldo Final: R$" + element.saldoFinal + "\n------------------------------\n";
+                                                                    }
+
+                                                                    // String arquivoPdf = "arquivo.pdf";
+                                                                    // PdfWriter.getInstance(doc, new FileOutputStream(arquivoPdf));
+
+                                                                    // Paragraph par = new Paragraph("Extrato");
+                                                                    // par.setAlignment(1);
+                                                                    // doc.add(par);
+
+                                                                    // PdfPTable table = new PdfPTable(10);
+                                                                    
+                                                                    if(vetorOperacoes.size() > 3 && opOffset == 0) {
+                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n1 - Próximo\n0 - Voltar\nPágina: " + (opOffset+1)));
+                                                                        if(aux == 1) {
+                                                                            opOffset++;
+                                                                            continue;
+                                                                        } else if (aux == 0) {
+                                                                            opExtrato = 0;
+                                                                            break;
+                                                                        }
+                                                                    } else if (vetorOperacoes.size() > 3 && opOffset >= 1) {
+                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n1 - Próximo\n2 - Anterior\n0 - Voltar\nPágina: " + (opOffset+1)));
+                                                                        if(aux == 1) {
+                                                                            opOffset++;
+                                                                            continue;
+                                                                        } else if (aux == 0) {
+                                                                            opExtrato = 0;
+                                                                            break;
+                                                                        } else if (aux == 2) {
+                                                                            opOffset--;
+                                                                            continue;
+                                                                        }
+                                                                    } else if (vetorOperacoes.size() <= 3 && opOffset >= 1){
+                                                                        if(vetorOperacoes.size() == 0) extrato = "Nenhuma movimentação encontrada";
+                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n2 - Anterior\n0 - Voltar\nPágina: " + (opOffset+1)));
+                                                                        if(aux == 2) {
+                                                                            opOffset--;
+                                                                            continue;
+                                                                        } else if (aux == 0) {
+                                                                            opExtrato = 0;
+                                                                            break;
+                                                                        }
+                                                                    } else {
+                                                                        if(vetorOperacoes.size() == 0) extrato = "Nenhuma movimentação encontrada";
+                                                                        int aux = 0;
+                                                                        JOptionPane.showMessageDialog(null, extrato + "\n\n0 - Voltar");
+                                                                        if (aux == 0) {
+                                                                            opExtrato = 0;
+                                                                            break;
                                                                         }
                                                                     }
-                                                                    JOptionPane.showMessageDialog(null, extrato);
-                                                                    opExtrato = 0;
                                                                 } while (opExtrato != 0);
                                                             break;
 
@@ -444,44 +541,56 @@ public class HomeBroker {
                                                                     int updateConta = Integer.parseInt(JOptionPane.showInputDialog("1 - Adicionar Saldo\n2 - Remover Saldo\n\n0 - Voltar\nDigite Uma Opção"));
                                                                     do {
                                                                         double movimentConta = 0.0;
-                                                                        int indice = 0;
+                                                                        String text = " ";
                                                                         switch (updateConta) {
+                                                                            case 0:
+                                                                                break;
                                                                             case 1:
-                                                                                indice = contaController.returnIndex(contaView.id, vetorConta);
                                                                                 movimentConta = Double.parseDouble(JOptionPane.showInputDialog("1 - Quanto deseja Adicionar?\n\n0 - Cancelar"));
                                                                                 if(movimentConta == 0.0){
                                                                                     break;
                                                                                 }
-                                                                                contaView.saldo += movimentConta;
-                                                                                contaView.newData(contaView.id, contaView.cliente, contaView.saldo, contaView.dataCriacao, contaView.dataModificacao);
-                                                                                if(contaController.update(contaView, vetorConta, indice)) {
-                                                                                    JOptionPane.showMessageDialog(null,"Saldo Adicionado");
-                                                                                } else {
-                                                                                    JOptionPane.showMessageDialog(null,"Ocorreu um erro ao adicionar saldo");
-                                                                                };
+                                                                                contaView.setSaldo(contaView.saldo + movimentConta);
+                                                                                objUpdate.put("IDCONTA", Integer.toString(contaView.id));                                        
+                                                                                objUpdate.put("IDCONTADEST", Integer.toString(contaView.id));                                        
+                                                                                objUpdate.put("OPERACAO", Integer.toString(1));                                        
+                                                                                objUpdate.put("TIPO", Integer.toString(1));                                        
+                                                                                objUpdate.put("SALDOFINAL", Double.toString(contaView.saldo + movimentConta));
+                                                                                objUpdate.put("VALOROP", Double.toString(movimentConta));
+                                                                                objUpdate.put("DESCRICAO", "Depósito de Cadastro");
+                                                                                objUpdate.put("DTCRIACAO", format.format(calendario.getTime()));  
+                                                                                dbConn.insert("OPERACOES", objUpdate);
+                                                                                text = "Saldo Adicionado";
                                                                                 break;
                                                                             case 2:
-                                                                                indice = contaController.returnIndex(contaView.id, vetorConta);
                                                                                 movimentConta = Double.parseDouble(JOptionPane.showInputDialog("1 - Quanto deseja Remover?"));
                                                                                 if(movimentConta == 0.0){
                                                                                     break;
                                                                                 }
                                                                                 contaView.saldo -= movimentConta;
                                                                                 contaView.newData(contaView.id, contaView.cliente, contaView.saldo, contaView.dataCriacao, contaView.dataModificacao);
-                                                                                if(contaController.update(contaView, vetorConta, indice)) {
-                                                                                    JOptionPane.showMessageDialog(null,"Saldo Removido");
+                                                                                if((contaView.saldo - movimentConta) >= 0) {
+                                                                                    contaView.setSaldo(contaView.saldo - movimentConta);
+                                                                                    text = "Saldo Removido";
                                                                                 } else {
-                                                                                    JOptionPane.showMessageDialog(null,"Ocorreu um erro ao remover saldo");
+                                                                                    JOptionPane.showMessageDialog(null,"Não possui saldo suficiente");
                                                                                 };
                                                                                 break;
                                                                         }
-                                                                        updateConta = 0;
-                                                                    }while(updateConta != 0);
+                                                                        if(updateConta > 0) {
+                                                                            objUpdate.put("SALDO", Double.toString(contaView.saldo));
+                                                                            int result = dbConn.update("CONTA", "IDCONTA", contaView.id, objUpdate);
+                                                                            text = (result == 0) ? "Ocorreu um erro durante a operação" : text;
+                                                                            JOptionPane.showMessageDialog(null,text);
+                                                                            updateConta = 0;
+                                                                        }
+                                                                    } while(updateConta != 0);
                                                                 } else {
                                                                     JOptionPane.showMessageDialog(null,"Senha Inválida");
                                                                 }
                                                             break;
                                                         }
+                                                        internConta = 0;
                                                 } while(internConta != 0);
                                                 }  else {
                                                     JOptionPane.showMessageDialog(null,"Não foi encontrado nenhum cliente");
@@ -511,8 +620,8 @@ public class HomeBroker {
                                      }
                                      for(int x = 0; x < incrementDays; x++){
                                         calendario.add(GregorianCalendar.DAY_OF_MONTH, 1);
-                                        precoAtivos.atualizaPrecoAtivos(book);
-                                        precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book);
+                                        // precoAtivos.atualizaPrecoAtivos(book);
+                                        // precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book);
                                         if(calendario.get(calendario.DAY_OF_MONTH) == 15) {
                                             idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, idOperacoesConta, vetorOperacoesConta, calendario);
                                             JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
@@ -523,7 +632,7 @@ public class HomeBroker {
                                     // int id_Ordem = Integer.parseInt(JOptionPane.showInputDialog(book.Ativos_book() + "\n\nQual \"ID\" do ativo:"));
                                     do {
                                         opUpdate = 0;
-                                        if(utils.verifyObjectIsVoid(vetorCliente) == 0){
+                                        if(vetorCliente.size() == 0){
                                             String auxMenuClienteUpdate = "";
                                             for (ClienteDAO element : vetorCliente) {
                                                 if(element != null){
@@ -536,13 +645,13 @@ public class HomeBroker {
                                                 break;
                                             }
                                             ClienteDAO clienteUdpdate = clienteController.returnObjectById(idUpdate, vetorCliente);//CLIENTE
-                                            ContaDAO contaUdpdate = contaController.returnContaByCliente(clienteUdpdate.id, vetorConta);//CONTA CLIENTE
+                                            ContaDAO contaUdpdate = contaController.getContaByCliente(clienteUdpdate.id, vetorConta);//CONTA CLIENTE
                                             if(clienteUdpdate != null) {
                                                 verifySenha = JOptionPane.showInputDialog("Confirme a senha do Administrador");
                                                 if(verifySenha.hashCode() == user.senha.hashCode()){//VERIFICAR SENHA
                                                     int id_ativo = Integer.parseInt(JOptionPane.showInputDialog(book.Ativos_book() + "\n\nQual \"ID\" do ativo:"));
                                                     Double preco_dividendo = Double.parseDouble(JOptionPane.showInputDialog("Qual valor do dividendo"));
-                                                    Double dividendo = book.Quantidade_Ativos_Conta(book.getAtivo(id_ativo), contaController.returnContaByCliente(user.id, vetorConta)) * preco_dividendo; //Valor do dividendo
+                                                    Double dividendo = book.Quantidade_Ativos_Conta(book.getAtivo(id_ativo), contaController.getContaByCliente(user.id, vetorConta)) * preco_dividendo; //Valor do dividendo
                                                     JOptionPane.showMessageDialog(null,"R$ " + dividendo);// pode apagar essa linha
                                                     
                                                     //DEVOLVE O SALDO CALCULADO
@@ -672,7 +781,7 @@ public class HomeBroker {
                     } else {
                            
                         //MENU DO USUÁRIO COMUM
-                        ContaDAO conta = contaController.returnContaByCliente(user.id, vetorConta);
+                        ContaDAO conta = contaController.getContaByCliente(user.id, vetorConta);
                         InvestimentoDAO contaInvest = investimentoController.returnObjectByConta(conta.id, vetorInvestimento);
                         // double investimentoInicial = 0;
                         JOptionPane.showMessageDialog(null, "Bem vindo " + user.nome + "!");
@@ -707,7 +816,6 @@ public class HomeBroker {
                                 menuCOMConta = "Saldo: " + conta.saldo + "\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
                             }
                             
-                            double totalInvestido = 0;
                             op =  Integer.parseInt(JOptionPane.showInputDialog(dataAtualStr + "\n" + user.nome + "\n\n"+menuCOM));
                             switch (op){
                                 case 0:
@@ -739,14 +847,15 @@ public class HomeBroker {
                                                 verifySenha = JOptionPane.showInputDialog("Confirme sua senha");
                                                 if(verifySenha.hashCode() == user.senha.hashCode()){//VERIFICAR SENHA
                                                     
-                                                    String nameUpdate   = JOptionPane.showInputDialog("Nome: "     + user.nome + "\n\nDigite novo Nome");
-                                                    String userUpdate   = JOptionPane.showInputDialog("Usuário: "  + user.login +"\n\nDigite novo Usuário");
-                                                    String passUpdate   = JOptionPane.showInputDialog("Senha: "    + user.senha +"\n\nEscolha nova Senha");
-                                                    String adressUpdate = JOptionPane.showInputDialog("Endereço: " + user.endereco +"\n\nDigite novo Endereço");
-                                                    String cpfUpdate    = JOptionPane.showInputDialog("CPF: "      + user.CPF +"\n\nDigite novo CPF");
-                                                    String phoneUpdate  = JOptionPane.showInputDialog("Telefone: " + user.telefone +"\n\nDigite novo Telefone");
-                                                    String update       = format.format(calendario.getTime());
-                                                    user.newData(user.id, nameUpdate, adressUpdate, cpfUpdate, phoneUpdate, userUpdate, passUpdate, false, user.dataCriacao, update);
+                                                    objUpdate.put("NOME", JOptionPane.showInputDialog("Nome: "     + user.nome + "\n\nDigite novo Nome"));
+                                                    objUpdate.put("LOGIN", JOptionPane.showInputDialog("Usuário: "  + user.login +"\n\nDigite novo Usuário"));
+                                                    objUpdate.put("SENHA", JOptionPane.showInputDialog("Senha: "    + user.senha +"\n\nEscolha nova Senha"));
+                                                    objUpdate.put("ENDERECO", JOptionPane.showInputDialog("Endereço: " + user.endereco +"\n\nDigite novo Endereço"));
+                                                    objUpdate.put("CPF", JOptionPane.showInputDialog("CPF: "      + user.CPF +"\n\nDigite novo CPF"));
+                                                    objUpdate.put("TELEFONE", JOptionPane.showInputDialog("Telefone: " + user.telefone +"\n\nDigite novo Telefone"));
+                                                    objUpdate.put("DTMODIFICACAO", format.format(calendario.getTime()));
+                                                    dbConn.update("CLIENTE", "IDCLIENTE", user.id, objUpdate);
+                                                    vetorCliente = clienteController.search();
                                                     JOptionPane.showMessageDialog(null,"Atualizado");
                                                 } else {
                                                     JOptionPane.showMessageDialog(null,"Senha inválida"); 
@@ -766,41 +875,86 @@ public class HomeBroker {
                                             switch (opCOMConta) {
                                                 case 0:
                                                 break;
+                                                
                                                 case 1://EXTRATO
                                                     int opExtrato = 1;
-                                                    String extrato = "";
+                                                    int opOffset = 0;
+                                                    String dataInicial = JOptionPane.showInputDialog("Digite a data inicial?\n Ex: 01/01/2022\n\n0 - Voltar\nDigite uma opção");
+                                                    String dataFinal = JOptionPane.showInputDialog("Digite a data final?\n Ex: 02/01/2022\n\n0 - Voltar\nDigite uma opção");
                                                     do{
-                                                        String dataInicial = JOptionPane.showInputDialog("Digite a data inicial?\n Ex: 01/01/2022\n\n0 - Voltar\nDigite uma opção");
-                                                        String dataFinal = JOptionPane.showInputDialog("Digite a data final?\n Ex: 02/01/2022\n\n0 - Voltar\nDigite uma opção");
+                                                        String extrato = "";
                                                         if(dataInicial.hashCode() == "0".hashCode() || dataFinal.hashCode() == "0".hashCode()) {
                                                             opExtrato = 0;
                                                             break;
                                                         }
                                                         Date dtinicio = format.parse(dataInicial + " 00:00:00");
-                                                        Date dtfinal = format.parse(dataFinal + " 23:59:59");
+                                                        Date dtfinal =  format.parse(dataFinal + " 23:59:59");
+                                                        if(dataInicial.hashCode() == dataFinal.hashCode()) {
+                                                            GregorianCalendar aux = new GregorianCalendar();
+                                                            aux.setTime(dtfinal);
+                                                            aux.add(GregorianCalendar.DAY_OF_MONTH, 1);
+                                                            dtfinal = aux.getTime();
+                                                        } 
+
+                                                        vetorOperacoes = operacoesContaController.search(conta.id, opOffset, formatBanco.format(dtinicio), formatBanco.format(dtfinal));
                                                         ClienteDAO pagador = new ClienteDAO();
                                                         ContaDAO contaPagador = new ContaDAO();
-                                                        for (OperacoesContaDAO element : vetorOperacoesConta) {
-                                                            if(element != null  && element.conta == conta.id){
-                                                                if(element.tipo == 5 || element.tipo == 3){
-                                                                    contaPagador = contaController.returnObjectById(element.contaTransferencia, vetorConta);
-                                                                    pagador = clienteController.returnObjectById(contaPagador.cliente, vetorCliente);
-                                                                }
-                                                                Date dtExtrato = format.parse(element.dataCriacao);
-                                                                if(dtExtrato.before(dtfinal) && dtExtrato.after(dtinicio)){
-                                                                    extrato += (element.operacao == 1) ? "Saida\n" : "Entrada\n";
-                                                                    extrato += (element.tipo == 5) ? "Recebido de: " + pagador.nome + "\n" : "";
-                                                                    extrato += (element.tipo == 3) ? "Enviado para: " + pagador.nome + "\n" : "";
-                                                                    extrato += (element.tipo == 1) ? "Tipo: Depósito\n" : (element.tipo == 2) ? "Tipo: Saque\n" 
-                                                                            : (element.tipo == 3) ? "Tipo: Transferência\n" : (element.tipo == 4) ? "Tipo: Pagamento\n" : "Tipo: Recebimento\n";
-                                                                    extrato += "Data: " + element.dataCriacao + "\n"+
-                                                                                "Valor: " + element.valor + "\n" +
-                                                                               "Saldo Final: R$" + element.saldoFinal + "\n------------------------------\n";
-                                                                }
+                                                        for (OperacoesContaDAO element : vetorOperacoes) {
+                                                            if(element.tipo == 5 || element.tipo == 3){
+                                                                contaPagador = contaController.getContaUser(element.contaTransferencia, vetorConta);
+                                                                pagador = clienteController.returnObjectById(contaPagador.cliente, vetorCliente);
+                                                            }
+
+                                                            extrato += (element.operacao == 1) ? "Saida\n" : "Entrada\n";
+                                                            extrato += (element.tipo == 5) ? "Recebido de: " + pagador.nome + "\n" : "";
+                                                            extrato += (element.tipo == 3) ? "Enviado para: " + pagador.nome + "\n" : "";
+                                                            extrato += (element.tipo == 1) ? "Tipo: Depósito\n" : (element.tipo == 2) ? "Tipo: Saque\n" 
+                                                                    : (element.tipo == 3) ? "Tipo: Transferência\n" : (element.tipo == 4) ? "Tipo: Pagamento\n" : "Tipo: Recebimento\n";
+                                                            extrato += "Data: " + element.dataCriacao + "\n"+
+                                                                        "Valor: " + element.valor + "\n" +
+                                                                    "Saldo Final: R$" + element.saldoFinal + "\n------------------------------\n";
+                                                        }
+                                                        
+                                                        if(vetorOperacoes.size() > 3 && opOffset == 0) {
+                                                            int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n1 - Próximo\n0 - Voltar\nPágina: " + (opOffset+1)));
+                                                            if(aux == 1) {
+                                                                opOffset++;
+                                                                continue;
+                                                            } else if (aux == 0) {
+                                                                opExtrato = 0;
+                                                                break;
+                                                            }
+                                                        } else if (vetorOperacoes.size() > 3 && opOffset >= 1) {
+                                                            int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n1 - Próximo\n2 - Anterior\n0 - Voltar\nPágina: " + (opOffset+1)));
+                                                            if(aux == 1) {
+                                                                opOffset++;
+                                                                continue;
+                                                            } else if (aux == 0) {
+                                                                opExtrato = 0;
+                                                                break;
+                                                            } else if (aux == 2) {
+                                                                opOffset--;
+                                                                continue;
+                                                            }
+                                                        } else if (vetorOperacoes.size() <= 3 && opOffset >= 1){
+                                                            if(vetorOperacoes.size() == 0) extrato = "Nenhuma movimentação encontrada";
+                                                            int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n2 - Anterior\n0 - Voltar\nPágina: " + (opOffset+1)));
+                                                            if(aux == 2) {
+                                                                opOffset--;
+                                                                continue;
+                                                            } else if (aux == 0) {
+                                                                opExtrato = 0;
+                                                                break;
+                                                            }
+                                                        } else {
+                                                            if(vetorOperacoes.size() == 0) extrato = "Nenhuma movimentação encontrada";
+                                                            int aux = 0;
+                                                            JOptionPane.showMessageDialog(null, extrato + "\n\n0 - Voltar");
+                                                            if (aux == 0) {
+                                                                opExtrato = 0;
+                                                                break;
                                                             }
                                                         }
-                                                        JOptionPane.showMessageDialog(null, extrato);
-                                                        opExtrato = 0;
                                                     } while (opExtrato != 0);
                                                 break;
 
@@ -810,8 +964,7 @@ public class HomeBroker {
                                                         if(opTransferencia == 0){
                                                             break;
                                                         }
-                                                        ContaDAO contaDE = new ContaDAO();
-                                                        contaDE = contaController.returnObjectById(opTransferencia, vetorConta);
+                                                        ContaDAO contaDE = contaController.getContaUser(opTransferencia, vetorConta);
                                                         if(contaDE == null) {
                                                             JOptionPane.showMessageDialog(null, "Não há nenhuma conta associada");
                                                             break;
@@ -826,30 +979,47 @@ public class HomeBroker {
 
                                                             double resultUser = operacoesContaController.depositoSaque(conta.saldo, valorTransferencia, false);
                                                             double resultDE = operacoesContaController.depositoSaque(contaDE.saldo, valorTransferencia, true);
-                                                            
-                                                            if(resultUser != -1 && resultDE != -1){
                                                                 if(resultUser > 0){
 
                                                                     String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");     
-                                                                    boolean contaResult = conta.setSaldo(resultUser);
-                                                                    boolean contaResultDE = contaDE.setSaldo(resultDE);
+                                                                    conta.setSaldo(resultUser);
+                                                                    contaDE.setSaldo(resultDE);
 
-                                                                    if(contaResult && contaResultDE) {
-                                                                        if(verificador){
-                                                                            menuCOMConta = "Saldo: " + conta.saldo + "\n1 - Extrato\n2 - Pagamento\n3 - Tranferência\n4 - Depósito\n5 - Saque\n6 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
-                                                                        }
-                                                                        idOperacoesConta = operacoesContaController.newOperation(conta, contaDE, vetorOperacoesConta, idOperacoesConta, descricao, calendario, valorTransferencia, resultDE, false);
+                                                                    objUpdate.put("SALDO", Double.toString(resultUser));
+                                                                    dbConn.update("CONTA", "IDCONTA", conta.id, objUpdate);
 
-                                                                        JOptionPane.showMessageDialog(null,"Transferência realizada");    
-                                                                    } else {
-                                                                        JOptionPane.showMessageDialog(null,"Ocorreu um erro ao registrar transferência"); 
-                                                                    }  
+                                                                    objUpdate.put("IDCONTA", Integer.toString(conta.id));                                        
+                                                                    objUpdate.put("IDCONTADEST", Integer.toString(contaDE.id));                                        
+                                                                    objUpdate.put("OPERACAO", Integer.toString(2));                                        
+                                                                    objUpdate.put("TIPO", Integer.toString(3));                                        
+                                                                    objUpdate.put("SALDOFINAL", Double.toString(resultUser));
+                                                                    objUpdate.put("VALOROP", Double.toString(valorTransferencia));
+                                                                    objUpdate.put("DESCRICAO", descricao);
+                                                                    objUpdate.put("DTCRIACAO", format.format(calendario.getTime()));  
+                                                                    dbConn.insert("OPERACOES", objUpdate);
+
+                                                                    objUpdate.put("SALDO", Double.toString(resultDE));
+                                                                    dbConn.update("CONTA", "IDCONTA", contaDE.id, objUpdate);
+
+                                                                    objUpdate.put("IDCONTA", Integer.toString(contaDE.id));                                        
+                                                                    objUpdate.put("IDCONTADEST", Integer.toString(conta.id));                                        
+                                                                    objUpdate.put("OPERACAO", Integer.toString(1));                                        
+                                                                    objUpdate.put("TIPO", Integer.toString(5));                                        
+                                                                    objUpdate.put("SALDOFINAL", Double.toString(resultUser));
+                                                                    objUpdate.put("VALOROP", Double.toString(valorTransferencia));
+                                                                    objUpdate.put("DESCRICAO", descricao);
+                                                                    objUpdate.put("DTCRIACAO", format.format(calendario.getTime()));  
+                                                                    dbConn.insert("OPERACOES", objUpdate);
+
+                                                                    if(verificador){
+                                                                        menuCOMConta = "Saldo: " + conta.saldo + "\n1 - Extrato\n2 - Pagamento\n3 - Tranferência\n4 - Depósito\n5 - Saque\n6 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
+                                                                    }
+                                                                    idOperacoesConta = operacoesContaController.newOperation(conta, contaDE, vetorOperacoesConta, idOperacoesConta, descricao, calendario, valorTransferencia, resultDE, false);
+                                                                    JOptionPane.showMessageDialog(null,"Transferência realizada");    
+                                                                    
                                                                 } else {
                                                                     JOptionPane.showMessageDialog(null,"Saldo insuficiente");
                                                                 }
-                                                            } else {
-                                                                JOptionPane.showMessageDialog(null,"Ocorreu um erro ao calcular saldo"); 
-                                                            }
                                                         } else {
                                                             JOptionPane.showMessageDialog(null,"Senha inválida");
                                                         }
@@ -873,7 +1043,7 @@ public class HomeBroker {
                                                                     }
                                                                     String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
                                                                     OperacoesContaDAO depositoOperacao = new OperacoesContaDAO();
-                                                                    depositoOperacao.newData(++idOperacoesConta, conta.id, -1, 2, conta.saldo,1, descricao, opDeposito, format.format(calendario.getTime()), null);
+                                                                    depositoOperacao.newData(0, 0, 0, 0, 0, 0, 0, " ", " ", " ");
                                                                     if(operacoesContaController.insert(depositoOperacao, vetorOperacoesConta)){ 
                                                                         JOptionPane.showMessageDialog(null,"Depósito realizado");    
                                                                     } else {
@@ -908,7 +1078,7 @@ public class HomeBroker {
                                                                         }
                                                                         String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
                                                                         OperacoesContaDAO saqueOperacao = new OperacoesContaDAO();
-                                                                        saqueOperacao.newData(++idOperacoesConta, conta.id, -1, 1, conta.saldo, 2, descricao, opSaque, format.format(calendario.getTime()), null);
+                                                                        saqueOperacao.newData(0, 0, 0, 0, 0, 0, 0, " ", " ", " ");
                                                                         if(operacoesContaController.insert(saqueOperacao, vetorOperacoesConta)){ 
                                                                             JOptionPane.showMessageDialog(null,"Saque realizado");    
                                                                         } else {
@@ -1063,8 +1233,8 @@ public class HomeBroker {
                                      
                                      for(int x = 0; x < incrementDays; x++){
                                         calendario.add(GregorianCalendar.DAY_OF_MONTH, 1);
-                                        precoAtivos.atualizaPrecoAtivos(book);
-                                        precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book);
+                                        // precoAtivos.atualizaPrecoAtivos(book);
+                                        // precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book);
                                         if(calendario.get(calendario.DAY_OF_MONTH) == 15) {
                                             idOperacoesConta = cobrancaDeTaxa.cobrarTaxa(vetorConta, idOperacoesConta, vetorOperacoesConta, calendario);
                                             JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
@@ -1072,7 +1242,7 @@ public class HomeBroker {
                                      }
                                 break;
                                 case 6://listar ativos Meus
-                                    String Meus_ativos = book.getMeu_ativo(contaController.returnContaByCliente(user.id, vetorConta));
+                                    String Meus_ativos = book.getMeu_ativo(contaController.getContaByCliente(user.id, vetorConta));
                                     if(Meus_ativos == "")
                                         JOptionPane.showMessageDialog(null,"Você não tem ativos");
                                     else

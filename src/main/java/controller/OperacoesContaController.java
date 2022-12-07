@@ -4,8 +4,14 @@
  */
 package controller;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import javax.swing.JOptionPane;
 
 import dao.ContaDAO;
 import dao.OperacoesContaDAO;
@@ -17,6 +23,37 @@ import dao.OperacoesContaDAO;
 public class OperacoesContaController extends CrudController {
 
     SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+    DBConnectionController dbConnectionController = new DBConnectionController();
+    public Set search(int id, int offset, String dtinicial, String dtfinal) {
+
+        Set<OperacoesContaDAO> obj = new LinkedHashSet<>();
+        try { 
+            String sql = "SELECT *, ROW_NUMBER() OVER () AS PAG FROM OPERACOES WHERE IDCONTA = " + id + " AND DTCRIACAO BETWEEN DATE('"
+                        + dtinicial + "') AND DATE('" + dtfinal + "') ORDER BY DTCRIACAO DESC LIMIT 5 OFFSET " + offset;
+            ResultSet result = dbConnectionController.execute(sql);
+            while(result.next()) {
+                OperacoesContaDAO operacoes = new OperacoesContaDAO();
+                operacoes.newData(
+                      result.getInt("IDOPERACOES")
+                    , result.getInt("IDCONTA")
+                    , result.getInt("IDCONTADEST")
+                    , result.getInt("OPERACAO")
+                    , result.getInt("TIPO")
+                    , result.getDouble("SALDOFINAL")
+                    , result.getDouble("VALOROP")
+                    , result.getString("DESCRICAO")
+                    , result.getString("DTCRIACAO")
+                    , result.getString("DTMODIFICACAO")
+                );
+                obj.add(operacoes);
+            }
+            return obj;
+        } catch (SQLException err) {
+            JOptionPane.showMessageDialog(null, err.getMessage());
+            throw null;
+        }
+
+    }
 
     public int returnIndex (int id, OperacoesContaDAO[] vetor){
         try {
@@ -68,8 +105,8 @@ public class OperacoesContaController extends CrudController {
             OperacoesContaDAO pagador = new OperacoesContaDAO();
             OperacoesContaDAO recebedor = new OperacoesContaDAO();  
             
-            pagador.newData(++idOperacoesConta, contaPagador.id, contaRecebedor.id,1, contaPagador.saldo,tipo, descricao, transferencia, format.format(calendario.getTime()), null);
-            recebedor.newData(++idOperacoesConta, contaRecebedor.id, contaPagador.id,2, resultDE,5, descricaoRec, transferencia, format.format(calendario.getTime()), null);
+            pagador.newData(0, 0, 0, 0, 0, 0, 0, " ", " ", " ");
+            recebedor.newData(0, 0, 0, 0, 0, 0, 0, " ", " ", " ");
             insert(pagador, vetorOperacoesConta);
             insert(recebedor, vetorOperacoesConta);
 
