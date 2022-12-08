@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class CobrancaDeTaxa {
     SimpleDateFormat formatBanco = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     DBConnectionController dbConn = new DBConnectionController();
 
-    public void cobrarTaxa (GregorianCalendar calendario, Set<CobrancaDAO> aux) {
+    public void registrarTaxa (GregorianCalendar calendario, Set<CobrancaDAO> aux) {
         try {
             if (!aux.isEmpty()) {
                 Map<String, String> objUpdate = new LinkedHashMap<String, String>();   
@@ -60,7 +61,7 @@ public class CobrancaDeTaxa {
         }
     }   
 
-    public Map getIds (GregorianCalendar calendario) {
+    private Map getIds (GregorianCalendar calendario) {
         try {
             String date = format.format(calendario.getTime());
             String sql = "SELECT DISTINCT IDCONTA FROM CONTA WHERE IDCONTA NOT IN ("
@@ -68,14 +69,58 @@ public class CobrancaDeTaxa {
                         + "AND DESCRICAO LIKE '%Taxa%') AND IDCONTA NOT IN (1,2)";
             
             ResultSet result =  dbConn.execute(sql);
-            Map<String, Integer> obj = new LinkedHashMap<String, Integer>();
+            Map<String, String> obj = new LinkedHashMap<String, String>();
             while(result.next()) {
-                obj.put("IDCONTA", result.getInt("IDCONTA"));
+                obj.put(result.getString("IDCONTA"), result.getString("IDCONTA"));
             }
             return obj;
         } catch (Exception err) {
             JOptionPane.showMessageDialog(null, err.getMessage());
             return null;
+        }
+    }
+
+    public Set cobrarTaxa (GregorianCalendar calendario, Set<ContaDAO> vetorConta) {
+        try {
+            Map result = this.getIds(calendario);
+            Map<String, String> objUpdate = new LinkedHashMap<String, String>();
+            Set aux = new LinkedHashSet<>();
+            Iterator it = result.entrySet().iterator();
+            Map.Entry elements = null;
+            ContaDAO contaAdm = contaController.getContaAdm(vetorConta);
+        
+            while(it.hasNext()) {
+                elements = (Map.Entry)it.next();
+                String value = elements.getValue().toString();
+                ContaDAO contaCobranca = contaController.getContaUser(Integer.parseInt(value), vetorConta);
+                
+                if (contaCobranca == null) {
+                    continue;
+                }
+                
+                CobrancaDAO taxaUsuario = new CobrancaDAO();                            
+                CobrancaDAO taxaAdm = new CobrancaDAO();
+        
+                double saldo = operacoesContaController.depositoSaque(contaCobranca.getSaldo(), 20, false);
+                taxaUsuario.newData(contaCobranca.id, contaAdm.id, saldo);
+                contaCobranca.setSaldo(saldo);
+        
+                objUpdate.put("SALDO", Double.toString(saldo));
+                dbConn.update("CONTA", "IDCONTA", contaCobranca.id, objUpdate);
+        
+                saldo = operacoesContaController.depositoSaque(contaAdm.getSaldo(), 20, true);
+                taxaAdm.newData(contaAdm.id, contaCobranca.id, saldo);
+                objUpdate.put("SALDO", Double.toString(saldo));
+                dbConn.update("CONTA", "IDCONTA", contaAdm.id, objUpdate);
+                contaAdm.setSaldo(saldo);
+        
+                aux.add(taxaUsuario);
+                aux.add(taxaAdm);
+            }
+            return aux;
+        } catch (Exception err) {
+            JOptionPane.showMessageDialog(null, err.getMessage());
+            throw err;
         }
     }
 }

@@ -118,50 +118,13 @@ public class HomeBroker {
                         do{ 
                             //ROTINA DE COBRANÇA DE TAXA DE MANUTENÇÃO
                             String dataAtualStr = formatDate.format(calendario.getTime());
-                            if(calendario.get(calendario.DAY_OF_MONTH)== 15) {
-
-                                Map result = cobrancaDeTaxa.getIds(calendario);
-                                Map<String, String> aux = new LinkedHashMap<String, String>();
-                                Set<CobrancaDAO> auxUser = new LinkedHashSet<>();
-                                Set<CobrancaDAO> auxAdm = new LinkedHashSet<>();
-                                Iterator it = result.entrySet().iterator();
-                                Map.Entry elements = null;
-                                while(it.hasNext()) {
-                                    elements = (Map.Entry)it.next();
-                                    String value = elements.getValue().toString();
-                                    int id = Integer.parseInt(value);
-                                    ContaDAO contaCobranca = contaController.getContaUser(id, vetorConta);
-                                    
-                                    if (contaCobranca == null) {
-                                        continue;
-                                    }
-                                    
-                                    CobrancaDAO taxaUsuario = new CobrancaDAO();                            
-                                    CobrancaDAO taxaAdm = new CobrancaDAO();
-
-                                    double saldo = operacoesContaController.depositoSaque(contaCobranca.getSaldo(), 20, false);
-                                    aux.put(value, Double.toString(saldo));
-                                    taxaUsuario.newData(contaCobranca.id, contaAdm.id, saldo);
-                                    contaCobranca.setSaldo(saldo);
-
-                                    objUpdate.put("SALDO", Double.toString(saldo));
-                                    dbConn.update("CONTA", "IDCONTA", contaCobranca.id, objUpdate);
-                    
-                                    saldo = operacoesContaController.depositoSaque(contaAdm.getSaldo(), 20, true);
-                                    taxaAdm.newData(contaAdm.id, contaCobranca.id, saldo);
-                                    objUpdate.put("SALDO", Double.toString(saldo));
-                                    dbConn.update("CONTA", "IDCONTA", contaAdm.id, objUpdate);
-                                    contaAdm.setSaldo(saldo);
-
-                                    auxUser.add(taxaUsuario);
-                                    auxAdm.add(taxaAdm);        
-                                }
-                                
-                                    cobrancaDeTaxa.cobrarTaxa(calendario, auxUser);
-                                    cobrancaDeTaxa.cobrarTaxa(calendario, auxAdm);
-                                    JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
+                            if(calendario.get(calendario.DAY_OF_MONTH) == 15) {
+                                Set result = cobrancaDeTaxa.cobrarTaxa(calendario, vetorConta);
+                                if (result.size() > 0) {
+                                    cobrancaDeTaxa.registrarTaxa(calendario, result);
+                                    JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção " + formatDate.format(calendario.getTime()));     
+                                } 
                             }
-                                
        
                             op =  Integer.parseInt(JOptionPane.showInputDialog(dataAtualStr + "\n" + user.nome + "\n\n"+menuADM));
                             switch (op){
@@ -584,49 +547,14 @@ public class HomeBroker {
                                         // precoAtivos.atualizaPrecoAtivos(book);
                                         // precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book);
                                         if(calendario.get(calendario.DAY_OF_MONTH)== 15) {
-
-                                            Map result = cobrancaDeTaxa.getIds(calendario);
-                                            Map<String, String> aux = new LinkedHashMap<String, String>();
-                                            Set<CobrancaDAO> auxUser = new LinkedHashSet<>();
-                                            Set<CobrancaDAO> auxAdm = new LinkedHashSet<>();
-                                            Iterator it = result.entrySet().iterator();
-                                            Map.Entry elements = null;
-                                            while(it.hasNext()) {
-                                                elements = (Map.Entry)it.next();
-                                                String id = elements.getValue().toString();
-                                                ContaDAO contaCobranca = contaController.getContaUser(1, vetorConta);
+                                            Set result = cobrancaDeTaxa.cobrarTaxa(calendario, vetorConta);
+                                                if (result.size() > 0)        
+                                                    cobrancaDeTaxa.registrarTaxa(calendario, result);
                                                 
-                                                if (contaCobranca == null) {
-                                                    continue;
-                                                }
-                                                
-                                                CobrancaDAO taxaUsuario = new CobrancaDAO();                            
-                                                CobrancaDAO taxaAdm = new CobrancaDAO();
-
-                                                double saldo = operacoesContaController.depositoSaque(contaCobranca.getSaldo(), 20, false);
-                                                aux.put(id, Double.toString(saldo));
-                                                taxaUsuario.newData(contaCobranca.id, contaAdm.id, saldo);
-                                                contaCobranca.setSaldo(saldo);
-
-                                                objUpdate.put("SALDO", Double.toString(saldo));
-                                                dbConn.close();
-                                                dbConn.update("CONTA", "IDCONTA", Integer.parseInt(id), objUpdate);
-                                
-                                                saldo = operacoesContaController.depositoSaque(contaAdm.getSaldo(), 20, true);
-                                                taxaAdm.newData(contaAdm.id, contaCobranca.id, saldo);
-                                                objUpdate.put("SALDO", Double.toString(saldo));
-                                                dbConn.update("CONTA", "IDCONTA", contaAdm.id, objUpdate);
-                                                contaAdm.setSaldo(saldo);
-
-                                                auxUser.add(taxaUsuario);
-                                                auxAdm.add(taxaAdm);        
-                                            }
-                                            
-                                                cobrancaDeTaxa.cobrarTaxa(calendario, auxUser);
-                                                cobrancaDeTaxa.cobrarTaxa(calendario, auxAdm);
-                                                JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
+                                                    JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção " + formatDate.format(calendario.getTime()));  
                                         }
-                                     }
+                                    }
+
                                 break;
 
                                 case 7://dividendos
@@ -786,50 +714,13 @@ public class HomeBroker {
                             
                             //ROTINA DE COBRANÇA DE TAXA DE MANUTENÇÃO
                             if(calendario.get(calendario.DAY_OF_MONTH)== 15) {
-
-                                Map result = cobrancaDeTaxa.getIds(calendario);
-                                Map<String, String> aux = new LinkedHashMap<String, String>();
-                                Set<CobrancaDAO> auxUser = new LinkedHashSet<>();
-                                Iterator it = result.entrySet().iterator();
-                                Map.Entry elements = null;
-                                while(it.hasNext()) {
-                                    elements = (Map.Entry)it.next();
-                                    String value = elements.getValue().toString();
-                                    int id = Integer.parseInt(value);
-                                    ContaDAO contaCobranca = contaController.getContaUser(id, vetorConta);
-                                    
-                                    if (contaCobranca == null) {
-                                        continue;
-                                    }
-                                    
-                                    CobrancaDAO taxaUsuario = new CobrancaDAO();                            
-                                    CobrancaDAO taxaAdm = new CobrancaDAO();
-
-                                    double saldo = operacoesContaController.depositoSaque(contaCobranca.getSaldo(), 20, false);
-                                    aux.put(value, Double.toString(saldo));
-                                    taxaUsuario.newData(contaCobranca.id, contaAdm.id, saldo);
-                                    contaCobranca.setSaldo(saldo);
-
-                                    objUpdate.put("SALDO", Double.toString(saldo));
-                                    dbConn.update("CONTA", "IDCONTA", contaCobranca.id, objUpdate);
-                    
-                                    saldo = operacoesContaController.depositoSaque(contaAdm.getSaldo(), 20, true);
-                                    taxaAdm.newData(contaAdm.id, contaCobranca.id, saldo);
-                                    objUpdate.put("SALDO", Double.toString(saldo));
-                                    dbConn.update("CONTA", "IDCONTA", contaAdm.id, objUpdate);
-                                    contaAdm.setSaldo(saldo);
-
-                                    auxUser.add(taxaUsuario);
-                                    auxUser.add(taxaAdm);        
-                                }
-                                
-                                    cobrancaDeTaxa.cobrarTaxa(calendario, auxUser);
-                                    JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
+                                Set result = cobrancaDeTaxa.cobrarTaxa(calendario, vetorConta);
+                                if (result.size() > 0) {
+                                    cobrancaDeTaxa.registrarTaxa(calendario, result);
+                                    JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção " + formatDate.format(calendario.getTime()));       
+                                }       
                             }
-                            
-                            //ROTINA ATUALIZAÇÃO DE LUCRO
-                            // precoAtivos.atualizaPrecoAtivos(book);
-                            // precoAtivos.calculaLucro(vetorConta, vetorInvestimento, book.getAtivos());
+                        
 
                             if(verificador){
                                 menuCOMConta = "Saldo: " + conta.saldo + "\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
@@ -1263,46 +1154,14 @@ public class HomeBroker {
                                         // precoAtivos.atualizaPrecoAtivos(book);
                                         // precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book);
                                         if(calendario.get(calendario.DAY_OF_MONTH)== 15) {
-
-                                            Map<String, Integer> result = cobrancaDeTaxa.getIds(calendario);
-                                            Map<String, String> aux = new LinkedHashMap<String, String>();
-                                            Set<CobrancaDAO> auxUser = new LinkedHashSet<>();
-                                            Iterator it = result.entrySet().iterator();
-                                            Map.Entry elements = null;
-                                            while(it.hasNext()) {
-                                                elements = (Map.Entry)it.next();
-                                                String value = elements.getValue().toString();
-                                                int id = Integer.parseInt(value);
-                                                ContaDAO contaCobranca = contaController.getContaUser(id, vetorConta);
+                                                Set result = cobrancaDeTaxa.cobrarTaxa(calendario, vetorConta);
+                                                if (result.size() > 0)        
+                                                    cobrancaDeTaxa.registrarTaxa(calendario, result);
                                                 
-                                                if (contaCobranca == null) {
-                                                    continue;
-                                                }
-                                                
-                                                CobrancaDAO taxaUsuario = new CobrancaDAO();                            
-                                                CobrancaDAO taxaAdm = new CobrancaDAO();
-
-                                                double saldo = operacoesContaController.depositoSaque(contaCobranca.getSaldo(), 20, false);
-                                                aux.put(value, Double.toString(saldo));
-                                                taxaUsuario.newData(contaCobranca.id, contaAdm.id, saldo);
-                                                contaCobranca.setSaldo(saldo);
-
-                                                objUpdate.put("SALDO", Double.toString(saldo));
-                                                dbConn.update("CONTA", "IDCONTA", contaCobranca.id, objUpdate);
-                                
-                                                saldo = operacoesContaController.depositoSaque(contaAdm.getSaldo(), 20, true);
-                                                taxaAdm.newData(contaAdm.id, contaCobranca.id, saldo);
-                                                objUpdate.put("SALDO", Double.toString(saldo));
-                                                dbConn.update("CONTA", "IDCONTA", contaAdm.id, objUpdate);
-                                                contaAdm.setSaldo(saldo);
-
-                                                auxUser.add(taxaUsuario);
-                                                auxUser.add(taxaAdm);        
+                                                    JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção " + formatDate.format(calendario.getTime()));  
                                             }
-                                            cobrancaDeTaxa.cobrarTaxa(calendario, auxUser);
-                                            JOptionPane.showMessageDialog(null, "Foi debitado a taxa de manutenção da conta");
                                         }
-                                     }
+                                    
                                 break;
                                 case 6://listar ativos Meus
                                     String Meus_ativos = book.getMeu_ativo(contaController.getContaByCliente(user.id, vetorConta));
