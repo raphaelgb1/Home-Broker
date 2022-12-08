@@ -22,6 +22,7 @@ import dao.OrdemDAO;
 
 import java.io.FileOutputStream;
 import java.sql.ResultSet;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -67,6 +68,7 @@ public class HomeBroker {
         SimpleDateFormat formatBanco = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         GregorianCalendar calendario = new GregorianCalendar();
         Document doc = new Document();
+        NumberFormat number = NumberFormat.getCurrencyInstance();
 
         BookDAO book = new BookDAO();
         book.newData(formatDate.format(calendario.getTime()));
@@ -380,6 +382,7 @@ public class HomeBroker {
                                                             case 2://EXTRATO
                                                                 int opExtrato = 1;
                                                                 int opOffset = 0;
+                                                                int pag = 1;
                                                                 String dataInicial = JOptionPane.showInputDialog("Digite a data inicial?\n Ex: 01/01/2022\n\n0 - Voltar\nDigite uma opção");
                                                                 String dataFinal = JOptionPane.showInputDialog("Digite a data final?\n Ex: 02/01/2022\n\n0 - Voltar\nDigite uma opção");
                                                                 do{
@@ -406,42 +409,46 @@ public class HomeBroker {
                                                                             pagador = clienteController.returnObjectById(contaPagador.cliente, vetorCliente);
                                                                         }
 
-                                                                        extrato += (element.operacao == 1) ? "Saida\n" : "Entrada\n";
+                                                                        extrato += (element.operacao == 2) ? "Saida\n" : "Entrada\n";
                                                                         extrato += (element.tipo == 5) ? "Recebido de: " + pagador.nome + "\n" : "";
                                                                         extrato += (element.tipo == 3) ? "Enviado para: " + pagador.nome + "\n" : "";
                                                                         extrato += (element.tipo == 1) ? "Tipo: Depósito\n" : (element.tipo == 2) ? "Tipo: Saque\n" 
                                                                                 : (element.tipo == 3) ? "Tipo: Transferência\n" : (element.tipo == 4) ? "Tipo: Pagamento\n" : "Tipo: Recebimento\n";
-                                                                        extrato += "Data: " + element.dataCriacao + "\n"+
-                                                                                    "Valor: " + element.valor + "\n" +
-                                                                                "Saldo Final: R$" + element.saldoFinal + "\n------------------------------\n";
+                                                                        extrato += "Data: " + format.format(formatBanco.parse(element.dataCriacao))  + "\n"+
+                                                                                    "Valor: " + number.format(element.valor)  + "\n" +
+                                                                                "Saldo Final: " + number.format(element.saldoFinal) + "\n------------------------------\n";
                                                                     }
                                                                     
-                                                                    if(vetorOperacoes.size() > 3 && opOffset == 0) {
-                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n1 - Próximo\n0 - Voltar\nPágina: " + (opOffset+1)));
+                                                                    if(vetorOperacoes.size() > 4 && opOffset == 0) {
+                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n1 - Próximo\n0 - Voltar\nPágina: " + pag));
                                                                         if(aux == 1) {
-                                                                            opOffset++;
+                                                                            opOffset+=5;
+                                                                            pag++;
                                                                             continue;
                                                                         } else if (aux == 0) {
                                                                             opExtrato = 0;
                                                                             break;
                                                                         }
-                                                                    } else if (vetorOperacoes.size() > 3 && opOffset >= 1) {
-                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n1 - Próximo\n2 - Anterior\n0 - Voltar\nPágina: " + (opOffset+1)));
+                                                                    } else if (vetorOperacoes.size() > 4 && opOffset >= 1) {
+                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n1 - Próximo\n2 - Anterior\n0 - Voltar\nPágina: " + pag));
                                                                         if(aux == 1) {
-                                                                            opOffset++;
+                                                                            opOffset+=5;
+                                                                            pag++;
                                                                             continue;
                                                                         } else if (aux == 0) {
                                                                             opExtrato = 0;
                                                                             break;
                                                                         } else if (aux == 2) {
-                                                                            opOffset--;
+                                                                            opOffset-=5;
+                                                                            pag--;
                                                                             continue;
                                                                         }
-                                                                    } else if (vetorOperacoes.size() <= 3 && opOffset >= 1){
-                                                                        if(vetorOperacoes.size() == 0) extrato = "Nenhuma movimentação encontrada";
-                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n2 - Anterior\n0 - Voltar\nPágina: " + (opOffset+1)));
+                                                                    } else if (vetorOperacoes.size() <= 4 && opOffset >= 1){
+                                                                        if(vetorOperacoes.size() == 0) extrato = "Não há mais resultados";
+                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n2 - Anterior\n0 - Voltar\nPágina: " + pag));
                                                                         if(aux == 2) {
-                                                                            opOffset--;
+                                                                            opOffset-=5;
+                                                                            pag--;
                                                                             continue;
                                                                         } else if (aux == 0) {
                                                                             opExtrato = 0;
@@ -450,7 +457,7 @@ public class HomeBroker {
                                                                     } else {
                                                                         if(vetorOperacoes.size() == 0) extrato = "Nenhuma movimentação encontrada";
                                                                         int aux = 0;
-                                                                        JOptionPane.showMessageDialog(null, extrato + "\n\n0 - Voltar");
+                                                                        JOptionPane.showMessageDialog(null, extrato);
                                                                         if (aux == 0) {
                                                                             opExtrato = 0;
                                                                             break;
@@ -713,7 +720,7 @@ public class HomeBroker {
                             String dataAtualStr = formatDate.format(calendario.getTime());
                             
                             //ROTINA DE COBRANÇA DE TAXA DE MANUTENÇÃO
-                            if(calendario.get(calendario.DAY_OF_MONTH)== 15) {
+                            if(calendario.get(calendario.DAY_OF_MONTH) == 15) {
                                 Set result = cobrancaDeTaxa.cobrarTaxa(calendario, vetorConta);
                                 if (result.size() > 0) {
                                     cobrancaDeTaxa.registrarTaxa(calendario, result);
@@ -723,7 +730,7 @@ public class HomeBroker {
                         
 
                             if(verificador){
-                                menuCOMConta = "Saldo: " + conta.saldo + "\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
+                                menuCOMConta = "Saldo: " + number.format(conta.saldo) + "\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
                             }
                             
                             op =  Integer.parseInt(JOptionPane.showInputDialog(dataAtualStr + "\n" + user.nome + "\n\n"+menuCOM));
@@ -816,14 +823,14 @@ public class HomeBroker {
                                                                 pagador = clienteController.returnObjectById(contaPagador.cliente, vetorCliente);
                                                             }
 
-                                                            extrato += (element.operacao == 1) ? "Saida\n" : "Entrada\n";
+                                                            extrato += (element.operacao == 2) ? "Saida\n" : "Entrada\n";
                                                             extrato += (element.tipo == 5) ? "Recebido de: " + pagador.nome + "\n" : "";
                                                             extrato += (element.tipo == 3) ? "Enviado para: " + pagador.nome + "\n" : "";
                                                             extrato += (element.tipo == 1) ? "Tipo: Depósito\n" : (element.tipo == 2) ? "Tipo: Saque\n" 
                                                                     : (element.tipo == 3) ? "Tipo: Transferência\n" : (element.tipo == 4) ? "Tipo: Pagamento\n" : "Tipo: Recebimento\n";
-                                                            extrato += "Data: " + element.dataCriacao + "\n"+
-                                                                        "Valor: " + element.valor + "\n" +
-                                                                    "Saldo Final: R$" + element.saldoFinal + "\n------------------------------\n";
+                                                            extrato += "Data: " + format.format(formatBanco.parse(element.dataCriacao)) + "\n"+
+                                                                        "Valor: " + number.format(element.valor)  + "\n" +
+                                                                    "Saldo Final: " + number.format(element.saldoFinal) + "\n------------------------------\n";
                                                         }
                                                         
                                                         if(vetorOperacoes.size() > 4 && opOffset == 0) {
@@ -927,7 +934,7 @@ public class HomeBroker {
                                                                     dbConn.insert("OPERACOES", objUpdate);
 
                                                                     if(verificador){
-                                                                         menuCOMConta = "Saldo: " + conta.saldo + "\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
+                                                                         menuCOMConta = "Saldo: " + number.format(conta.saldo) + "\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
                                                                     }
                                                                     JOptionPane.showMessageDialog(null,"Transferência realizada");    
                                                                     
@@ -969,7 +976,7 @@ public class HomeBroker {
                                                             JOptionPane.showMessageDialog(null,"Depósito realizado");  
 
                                                             if(verificador){
-                                                                menuCOMConta = "Saldo: " + conta.saldo + "\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
+                                                                menuCOMConta = "Saldo: " + number.format(conta.saldo) + "\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
                                                            }  
                                                         } else {
                                                             JOptionPane.showMessageDialog(null,"Senha inválida");
@@ -1009,7 +1016,7 @@ public class HomeBroker {
                                                                 JOptionPane.showMessageDialog(null,"Saque realizado"); 
                                                                 
                                                                 if(verificador){
-                                                                    menuCOMConta = "Saldo: " + conta.saldo + "\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
+                                                                    menuCOMConta = "Saldo: " + number.format(conta.saldo) + "\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
                                                                 }   
                                                             } else {
                                                                 JOptionPane.showMessageDialog(null,"Senha inválida"); 
@@ -1023,7 +1030,7 @@ public class HomeBroker {
 
                                                 case 5://MOSTRAR SALDO
                                                     verificador = (verificador == true) ? false : true;
-                                                    String auxSaldo = "Saldo: " + conta.saldo + "\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
+                                                    String auxSaldo = "Saldo: " + number.format(conta.saldo) + "\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Ocultar Saldo\n\n0 - Voltar\nDigite uma opção";
                                                     if(verificador){
                                                         menuCOMConta = auxSaldo;
                                                     } else {
