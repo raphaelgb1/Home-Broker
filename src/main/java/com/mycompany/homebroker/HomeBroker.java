@@ -10,7 +10,6 @@ import controller.CobrancaDeTaxa;
 import controller.ContaController;
 import controller.DBConnectionController;
 import controller.OperacoesContaController;
-import controller.PrecoAtivosController;
 import dao.AtivosDAO;
 import dao.ClienteDAO;
 import dao.CobrancaDAO;
@@ -54,8 +53,6 @@ public class HomeBroker {
         Set<ContaDAO> vetorConta = new LinkedHashSet<>();
         Set<OperacoesContaDAO> vetorOperacoes = new LinkedHashSet<>();
         Map<String,String> objUpdate = new LinkedHashMap<String,String>();
-
-        PrecoAtivosController precoAtivos = new PrecoAtivosController();
         CobrancaDeTaxa cobrancaDeTaxa = new CobrancaDeTaxa();
         OperacoesContaDAO[] vetorOperacoesConta = new OperacoesContaDAO[100];
         DBConnectionController dbConn = new DBConnectionController();
@@ -68,8 +65,6 @@ public class HomeBroker {
 
         BookDAO book = new BookDAO();
         book.newData(formatDate.format(calendario.getTime()));
-        
-        precoAtivos.atualizaPrecoAtivos(book);
         
         vetorCliente = clienteController.search();
         vetorConta = contaController.search();
