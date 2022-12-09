@@ -628,7 +628,6 @@ public class HomeBroker {
                                     } while (tipo_Ordem == 2 && (Ordem.getAtivo().getQuantidade() > 0 && Ordem.getAtivo().getQuantidade() >= book.get_quantidadeordenscompra(id_Ordem)) && contaAdm.id != 1);
                                     Ordem.getAtivo().setDataCriacao(format.format(calendario.getTime()));
                                     Ordem.getAtivo().setDataModificacao(format.format(calendario.getTime()));
-                                    Ordem.setPendente(false);
                                     
                                     AtivosDAO ativo = Ordem.getAtivo();
                                     double valor = ativo.preço_inicial*ativo.Quantidade;
@@ -1062,7 +1061,6 @@ public class HomeBroker {
                                     } while (tipo_Ordem == 2 && (Ordem.getAtivo().getQuantidade() > 0 && Ordem.getAtivo().getQuantidade() >= book.get_quantidadeordenscompra(id_Ordem)) && conta.id != 0);
                                     Ordem.getAtivo().setDataCriacao(format.format(calendario.getTime()));
                                     Ordem.getAtivo().setDataModificacao(format.format(calendario.getTime()));
-                                    Ordem.setPendente(false);
                                     
                                     AtivosDAO ativo = Ordem.getAtivo();
                                     double valor = ativo.preço_inicial*ativo.Quantidade;
