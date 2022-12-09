@@ -3,6 +3,7 @@ package dao;
 import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -13,7 +14,9 @@ public class DBConnectionDAO {
     private static Connection open() {
         
         try {
-            Connection connection = DriverManager.getConnection("jdbc:sqlite:C:/Users/rapha/OneDrive/Análise e Desenvolvimento de Sistemas/3° Período/Programação Orientada a Objetos/Trabalho 2/Home-Broker/src/database/homeBroker.sqlite");
+            File database = new File("src/database/homeBroker.sqlite");
+            String path = database.getAbsolutePath();
+            Connection connection = DriverManager.getConnection("jdbc:sqlite:" + path);
             return connection;
         } catch (SQLException err) {
             System.out.println(err.getMessage());

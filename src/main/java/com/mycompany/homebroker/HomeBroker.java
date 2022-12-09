@@ -12,18 +12,13 @@ import controller.DBConnectionController;
 import controller.OperacoesContaController;
 import dao.AtivosDAO;
 import dao.ClienteDAO;
-import dao.CobrancaDAO;
 import dao.ContaDAO;
 import dao.OperacoesContaDAO;
 import dao.OrdemDAO;
-
-import java.io.FileOutputStream;
-import java.sql.ResultSet;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -31,12 +26,6 @@ import java.util.Set;
 
 // import javax.lang.model.util.ElementScanner14;
 import javax.swing.JOptionPane;
-
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
-
 import dao.BookDAO;
 /**
  *
@@ -51,6 +40,7 @@ public class HomeBroker {
         OperacoesContaController operacoesContaController = new OperacoesContaController();
         Set<ClienteDAO> vetorCliente = new LinkedHashSet<>();
         Set<ContaDAO> vetorConta = new LinkedHashSet<>();
+        BookDAO book = new BookDAO();
         Set<OperacoesContaDAO> vetorOperacoes = new LinkedHashSet<>();
         Map<String,String> objUpdate = new LinkedHashMap<String,String>();
         CobrancaDeTaxa cobrancaDeTaxa = new CobrancaDeTaxa();
@@ -60,14 +50,7 @@ public class HomeBroker {
         SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy");
         SimpleDateFormat formatBanco = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         GregorianCalendar calendario = new GregorianCalendar();
-        Document doc = new Document();
-        NumberFormat number = NumberFormat.getCurrencyInstance();
-
-        BookDAO book = new BookDAO();
-        book.newData(formatDate.format(calendario.getTime()));
-        
-        vetorCliente = clienteController.search();
-        vetorConta = contaController.search();
+        NumberFormat number = NumberFormat.getCurrencyInstance();    
     
         int op = 0;
         int opUser = 0;
@@ -75,10 +58,8 @@ public class HomeBroker {
         int opDelete = 0;
         int opUpdate = 0;
         int verify = 0;
-        int idOrdem = 0;
-        
-        int idOperacoesConta = 0;
-        
+        int idOrdem = 0;    
+        int idOperacoesConta = 0;       
         boolean verificador = false;
         
         String verifySenha = "";
@@ -88,6 +69,10 @@ public class HomeBroker {
         String menuCOMPerfil = "1 - Visualizar Perfil\n2 - Editar Perfil\n\n0 - Voltar\nDigite uma opção";
         String menuCOMConta = "Saldo: ------\n1 - Extrato\n2 - Tranferência\n3 - Depósito\n4 - Saque\n5 - Mostrar Saldo\n\n0 - Voltar\nDigite uma opção";
         String auxMenu = menuCOMConta;
+
+        book.newData(formatDate.format(calendario.getTime()));
+        vetorCliente = clienteController.search();
+        vetorConta = contaController.search();
   
         try {
             do {      
@@ -149,7 +134,7 @@ public class HomeBroker {
                                         objUpdate.put("SALDO", Double.toString(resultAdm));
                                         dbConn.update("CONTA", "IDCONTA", contaAdm.id, objUpdate);
 
-                                        //REGISTRA OPERAÇÃO
+                                        //DEPOSITO BÔNUS DE 500K
                                         objUpdate.put("IDCONTA", Integer.toString(contaAdm.id));                                        
                                         objUpdate.put("IDCONTADEST", Integer.toString(idCont));                                        
                                         objUpdate.put("OPERACAO", Integer.toString(2));                                        
@@ -542,8 +527,6 @@ public class HomeBroker {
                                      }
                                      for(int x = 0; x < incrementDays; x++){
                                         calendario.add(GregorianCalendar.DAY_OF_MONTH, 1);
-                                        // precoAtivos.atualizaPrecoAtivos(book);
-                                        // precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book);
                                         if(calendario.get(calendario.DAY_OF_MONTH)== 15) {
                                             Set result = cobrancaDeTaxa.cobrarTaxa(calendario, vetorConta);
                                                 if (result.size() > 0)        
@@ -1148,8 +1131,6 @@ public class HomeBroker {
                                      
                                      for(int x = 0; x < incrementDays; x++){
                                         calendario.add(GregorianCalendar.DAY_OF_MONTH, 1);
-                                        // precoAtivos.atualizaPrecoAtivos(book);
-                                        // precoAtivos.atualizaTotalInvestido(vetorConta, vetorInvestimento, book);
                                         if(calendario.get(calendario.DAY_OF_MONTH)== 15) {
                                                 Set result = cobrancaDeTaxa.cobrarTaxa(calendario, vetorConta);
                                                 if (result.size() > 0)        

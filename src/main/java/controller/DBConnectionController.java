@@ -14,49 +14,21 @@ public class DBConnectionController {
         return this.dbConnectionDAO;
     }
 
+    //USAR SOMENTO PARA SELECT
     public  ResultSet execute (String sql) {
         DBConnectionDAO dbConnectionDAO = getDbConn();
         ResultSet resultDB = dbConnectionDAO.execute(sql);
         return resultDB;
     }
 
+    //USAR SOMENTE PARA INSERTS ESPECÍFICOS
     public int executeInsert (String sql) {
         DBConnectionDAO dbConnectionDAO = getDbConn();
         int resultDB = dbConnectionDAO.update(sql);
         return resultDB;
     }
 
-    // public Set search(Set<Object> obj2) {
-
-    //     Set<Object> obj = new LinkedHashSet<>();
-    //     try {
-    //         String sql = "SELECT * FROM CLIENTE";
-    //         ResultSet result = dbConnectionController.execute(sql);;
-    //         Iterator<String> it = 
-    //         while(result.next()) {
-    //             Object cliente = new Object();
-    //             cliente.newData(
-    //                   result.getInt(   "IDCLIENTE")
-    //                 , result.getString("NOME")
-    //                 , result.getString("ENDERECO")
-    //                 , result.getString("CPF")
-    //                 , result.getString("TELEFONE")
-    //                 , result.getString("LOGIN")
-    //                 , result.getString("SENHA")
-    //                 , result.getBoolean("ADM")
-    //                 , result.getString("DATACRIACAO")
-    //                 , result.getString("DATAMODIFICACAO")
-    //             );
-    //             obj.add(cliente);
-    //         }
-    //         return obj;
-    //     } catch (SQLException err) {
-    //         JOptionPane.showMessageDialog(null, err.getMessage());
-    //         throw null;
-    //     }
-
-    // }
-    
+    //UPDATE RETORNA A QUANTIDADE DE COLUNAS AFETADAS
     public  int update (String tableName, String key, int id, Map colunas) {
         try {
             String sql = "UPDATE " + tableName + " SET ";
@@ -77,6 +49,7 @@ public class DBConnectionController {
         }
     }
 
+    //DELETE RETORNA A QUANTIDADE DE COLUNAS AFETADAS
     public int delete (String tableName, String key, int id) {
         try {
             String sql = "DELETE FROM " + tableName + " WHERE " + key + " = " + id;
@@ -88,6 +61,7 @@ public class DBConnectionController {
         }
     }
 
+    //INSERT RETORNA O ID DO ELEMENTO INSERIDO
     public int insert (String tableName, Map colunas) {
         try {
             String sql = "INSERT INTO " + tableName + " (";
