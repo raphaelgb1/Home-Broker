@@ -9,14 +9,12 @@ import controller.ClienteController;
 import controller.CobrancaDeTaxa;
 import controller.ContaController;
 import controller.DBConnectionController;
-import controller.InvestimentoController;
 import controller.OperacoesContaController;
 import controller.PrecoAtivosController;
 import dao.AtivosDAO;
 import dao.ClienteDAO;
 import dao.CobrancaDAO;
 import dao.ContaDAO;
-import dao.InvestimentoDAO;
 import dao.OperacoesContaDAO;
 import dao.OrdemDAO;
 
@@ -52,14 +50,12 @@ public class HomeBroker {
         ClienteController clienteController = new ClienteController();
         ContaController contaController = new ContaController();
         OperacoesContaController operacoesContaController = new OperacoesContaController();
-        InvestimentoController investimentoController = new InvestimentoController();
         Set<ClienteDAO> vetorCliente = new LinkedHashSet<>();
         Set<ContaDAO> vetorConta = new LinkedHashSet<>();
         Set<OperacoesContaDAO> vetorOperacoes = new LinkedHashSet<>();
         Map<String,String> objUpdate = new LinkedHashMap<String,String>();
 
         PrecoAtivosController precoAtivos = new PrecoAtivosController();
-        InvestimentoDAO[] vetorInvestimento = new InvestimentoDAO[5];
         CobrancaDeTaxa cobrancaDeTaxa = new CobrancaDeTaxa();
         OperacoesContaDAO[] vetorOperacoesConta = new OperacoesContaDAO[100];
         DBConnectionController dbConn = new DBConnectionController();
@@ -713,7 +709,6 @@ public class HomeBroker {
                            
                         //MENU DO USUÁRIO COMUM
                         ContaDAO conta = contaController.getContaByCliente(user.id, vetorConta);
-                        InvestimentoDAO contaInvest = investimentoController.returnObjectByConta(conta.id, vetorInvestimento);
                         // double investimentoInicial = 0;
                         JOptionPane.showMessageDialog(null, "Bem vindo " + user.nome + "!");
                         do{
