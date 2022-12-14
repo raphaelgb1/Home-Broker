@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 
 import dao.ClienteDAO;
+import dao.ContaDAO;
 
 /**
  *
@@ -130,6 +131,23 @@ public class ClienteController {
             }
             return null;
         } catch (Exception err) {
+            return null;
+        }
+    }
+
+    public ClienteDAO getClienteByConta (int id, Set<ContaDAO> vetorConta, Set<ClienteDAO> vetorCliente) {
+        try {
+            for (ContaDAO conta : vetorConta) {
+                if(conta.id == id) {
+                    for (ClienteDAO cliente : vetorCliente) {
+                        if(conta.cliente == cliente.id) {
+                            return cliente;
+                        }
+                    }
+                }
+            }
+            return null;
+        } catch (Exception e) {
             return null;
         }
     }

@@ -10,6 +10,7 @@ import controller.CobrancaDeTaxa;
 import controller.ContaController;
 import controller.DBConnectionController;
 import controller.OperacoesContaController;
+import controller.PDFController;
 import dao.AtivosDAO;
 import dao.ClienteDAO;
 import dao.ContaDAO;
@@ -40,6 +41,7 @@ public class HomeBroker {
         OperacoesContaController operacoesContaController = new OperacoesContaController();
         Set<ClienteDAO> vetorCliente = new LinkedHashSet<>();
         Set<ContaDAO> vetorConta = new LinkedHashSet<>();
+        PDFController pdfController = new PDFController();
         BookDAO book = new BookDAO();
         Set<OperacoesContaDAO> vetorOperacoes = new LinkedHashSet<>();
         Map<String,String> objUpdate = new LinkedHashMap<String,String>();
@@ -47,6 +49,7 @@ public class HomeBroker {
         OperacoesContaDAO[] vetorOperacoesConta = new OperacoesContaDAO[100];
         DBConnectionController dbConn = new DBConnectionController();
         SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        SimpleDateFormat formatExtrato = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy");
         SimpleDateFormat formatBanco = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         GregorianCalendar calendario = new GregorianCalendar();
@@ -73,6 +76,7 @@ public class HomeBroker {
         book.newData(formatDate.format(calendario.getTime()));
         vetorCliente = clienteController.search();
         vetorConta = contaController.search();
+        
   
         try {
             do {      
@@ -148,7 +152,7 @@ public class HomeBroker {
                                         objUpdate.put("IDCONTA", Integer.toString(idCont));                                        
                                         objUpdate.put("IDCONTADEST", Integer.toString(contaAdm.id));                                        
                                         objUpdate.put("OPERACAO", Integer.toString(1));                                        
-                                        objUpdate.put("TIPO", Integer.toString(3));                                        
+                                        objUpdate.put("TIPO", Integer.toString(5));                                        
                                         objUpdate.put("SALDOFINAL", Double.toString(resultUser));
                                         objUpdate.put("VALOROP", Double.toString(500000));
                                         objUpdate.put("DESCRICAO", "Bônus de Cadastro");
@@ -206,6 +210,7 @@ public class HomeBroker {
                                                         objUpdate.put("DTMODIFICACAO", formatBanco.format(calendario.getTime()));
                                                         dbConn.update("CLIENTE", "IDCLIENTE", clienteUdpdate.id, objUpdate);
                                                         vetorCliente = clienteController.search();
+                                                        user = clienteController.verifyUserName(vetorCliente, userName);
                                                         JOptionPane.showMessageDialog(null,"Perfil Atualizado");
                                                         opUpdate = 1;
                                                     }  else {
@@ -252,7 +257,7 @@ public class HomeBroker {
                                                                         +"\nTelefone: "+clienteView.telefone
                                                                         +"\nData de Criação: "+clienteView.dataCriacao;
                                                 clienteViewText += (clienteView.dataModificacao == null) ? "\nData de Modificação: Sem Modificação" 
-                                                        : "\nData de Modificação: " + clienteView.dataModificacao;
+                                                        : "\nData de Modificação: " + formatExtrato.format(formatBanco.parse(clienteView.dataModificacao));
                                                 clienteViewText += (clienteView.adm == false) ? "\nAdministrador: Não" : "\nAdministrador: Sim";
                                                 JOptionPane.showMessageDialog(null,clienteViewText);          
                                             } else {
@@ -390,13 +395,20 @@ public class HomeBroker {
                                                                         extrato += (element.tipo == 3) ? "Enviado para: " + pagador.nome + "\n" : "";
                                                                         extrato += (element.tipo == 1) ? "Tipo: Depósito\n" : (element.tipo == 2) ? "Tipo: Saque\n" 
                                                                                 : (element.tipo == 3) ? "Tipo: Transferência\n" : (element.tipo == 4) ? "Tipo: Pagamento\n" : "Tipo: Recebimento\n";
-                                                                        extrato += "Data: " + format.format(formatBanco.parse(element.dataCriacao))  + "\n"+
+                                                                        extrato += "Data: " + formatExtrato.format(formatBanco.parse(element.dataCriacao))  + "\n"+
                                                                                     "Valor: " + number.format(element.valor)  + "\n" +
                                                                                 "Saldo Final: " + number.format(element.saldoFinal) + "\n------------------------------\n";
                                                                     }
                                                                     
+                                                                    Map<String, Set> vetores = new LinkedHashMap<String, Set>();
+                                                                    vetores.put("Conta", vetorConta);
+                                                                    vetores.put("Cliente", vetorCliente);
+
+                                                                    Map<String, String> datas = new LinkedHashMap<String, String>();
+                                                                    datas.put("Inicio", formatBanco.format(dtinicio));
+                                                                    datas.put("Final", formatBanco.format(dtfinal));
                                                                     if(vetorOperacoes.size() > 4 && opOffset == 0) {
-                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n1 - Próximo\n0 - Voltar\nPágina: " + pag));
+                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n9 - Salvar Extrato\n1 - Próximo\n0 - Voltar\nPágina: " + pag));
                                                                         if(aux == 1) {
                                                                             opOffset+=5;
                                                                             pag++;
@@ -404,9 +416,11 @@ public class HomeBroker {
                                                                         } else if (aux == 0) {
                                                                             opExtrato = 0;
                                                                             break;
+                                                                        } else if (aux == 9) {
+                                                                            pdfController.gerarPdf(contaView, vetores, datas);
                                                                         }
                                                                     } else if (vetorOperacoes.size() > 4 && opOffset >= 1) {
-                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n1 - Próximo\n2 - Anterior\n0 - Voltar\nPágina: " + pag));
+                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n9 - Salvar Extrato\n1 - Próximo\n2 - Anterior\n0 - Voltar\nPágina: " + pag));
                                                                         if(aux == 1) {
                                                                             opOffset+=5;
                                                                             pag++;
@@ -418,10 +432,12 @@ public class HomeBroker {
                                                                             opOffset-=5;
                                                                             pag--;
                                                                             continue;
+                                                                        } else if (aux == 9) {
+                                                                            pdfController.gerarPdf(contaView, vetores, datas);
                                                                         }
                                                                     } else if (vetorOperacoes.size() <= 4 && opOffset >= 1){
                                                                         if(vetorOperacoes.size() == 0) extrato = "Não há mais resultados";
-                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n2 - Anterior\n0 - Voltar\nPágina: " + pag));
+                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n9 - Salvar Extrato\n2 - Anterior\n0 - Voltar\nPágina: " + pag));
                                                                         if(aux == 2) {
                                                                             opOffset-=5;
                                                                             pag--;
@@ -429,14 +445,21 @@ public class HomeBroker {
                                                                         } else if (aux == 0) {
                                                                             opExtrato = 0;
                                                                             break;
+                                                                        } else if (aux == 9) {
+                                                                            pdfController.gerarPdf(contaView, vetores, datas);
                                                                         }
                                                                     } else {
-                                                                        if(vetorOperacoes.size() == 0) extrato = "Nenhuma movimentação encontrada";
-                                                                        int aux = 0;
-                                                                        JOptionPane.showMessageDialog(null, extrato);
+                                                                        if(vetorOperacoes.size() == 0) {
+                                                                            extrato = "Nenhuma movimentação encontrada";
+                                                                            JOptionPane.showMessageDialog(null, extrato);
+                                                                            break;
+                                                                        }
+                                                                        int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n9 - Salvar Extrato\n0 - Voltar\nPágina: " + pag));
                                                                         if (aux == 0) {
                                                                             opExtrato = 0;
                                                                             break;
+                                                                        } else if (aux == 9) {
+                                                                            pdfController.gerarPdf(contaView, vetores, datas);
                                                                         }
                                                                     }
                                                                 } while (opExtrato != 0);
@@ -727,7 +750,7 @@ public class HomeBroker {
                                                                         +"\nTelefone: "+user.telefone
                                                                         +"\nData de Criação: "+user.dataCriacao;
                                                 userClienteView += (user.dataModificacao == null) ? "\nData de Modificação: Sem Modificação" 
-                                                        : "\nData de Modificação: " + user.dataModificacao;
+                                                        : "\nData de Modificação: " + formatExtrato.format(formatBanco.parse(user.dataModificacao));
                                                 userClienteView += (user.adm == false) ? "\nAdministrador: Não" : "\nAdministrador: Sim";
                                                 JOptionPane.showMessageDialog(null,userClienteView);
                                             break;
@@ -745,6 +768,7 @@ public class HomeBroker {
                                                     objUpdate.put("DTMODIFICACAO", formatBanco.format(calendario.getTime()));
                                                     dbConn.update("CLIENTE", "IDCLIENTE", user.id, objUpdate);
                                                     vetorCliente = clienteController.search();
+                                                    user = clienteController.verifyUserName(vetorCliente, userName);
                                                     JOptionPane.showMessageDialog(null,"Atualizado");
                                                 } else {
                                                     JOptionPane.showMessageDialog(null,"Senha inválida"); 
@@ -800,7 +824,7 @@ public class HomeBroker {
                                                             extrato += (element.tipo == 3) ? "Enviado para: " + pagador.nome + "\n" : "";
                                                             extrato += (element.tipo == 1) ? "Tipo: Depósito\n" : (element.tipo == 2) ? "Tipo: Saque\n" 
                                                                     : (element.tipo == 3) ? "Tipo: Transferência\n" : (element.tipo == 4) ? "Tipo: Pagamento\n" : "Tipo: Recebimento\n";
-                                                            extrato += "Data: " + format.format(formatBanco.parse(element.dataCriacao)) + "\n"+
+                                                            extrato += "Data: " + formatExtrato.format(formatBanco.parse(element.dataCriacao)) + "\n"+
                                                                         "Valor: " + number.format(element.valor)  + "\n" +
                                                                     "Saldo Final: " + number.format(element.saldoFinal) + "\n------------------------------\n";
                                                         }
@@ -1168,7 +1192,7 @@ public class HomeBroker {
             opUser = 0;
             } while(opUser != 1);
         } catch (Exception err) {
-            JOptionPane.showMessageDialog(null, err);
+            JOptionPane.showMessageDialog(null, "Erro, por favor, abrir chamado");
         }
         
     }

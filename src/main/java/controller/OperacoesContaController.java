@@ -61,6 +61,35 @@ public class OperacoesContaController extends CrudController {
 
     }
 
+    public Set relatorio(int id, String dtinicial, String dtfinal) {
+        Set<OperacoesContaDAO> obj = new LinkedHashSet<>();
+        try { 
+            String sql = "SELECT * FROM OPERACOES WHERE IDCONTA = " + id + " AND DTCRIACAO BETWEEN DATE('"
+                        + dtinicial + "') AND DATE('" + dtfinal + "') ORDER BY DTCRIACAO";
+            ResultSet result = dbConnectionController.execute(sql);
+            while(result.next()) {
+                OperacoesContaDAO operacoes = new OperacoesContaDAO();
+                operacoes.newData(
+                      result.getInt("IDOPERACOES")
+                    , result.getInt("IDCONTA")
+                    , result.getInt("IDCONTADEST")
+                    , result.getInt("OPERACAO")
+                    , result.getInt("TIPO")
+                    , result.getDouble("SALDOFINAL")
+                    , result.getDouble("VALOROP")
+                    , result.getString("DESCRICAO")
+                    , result.getString("DTCRIACAO")
+                    , result.getString("DTMODIFICACAO")
+                );
+                obj.add(operacoes);
+            }
+            return obj;
+        } catch (SQLException err) {
+            JOptionPane.showMessageDialog(null, err.getMessage());
+            throw null;
+        }
+    }
+
     public int returnIndex (int id, OperacoesContaDAO[] vetor){
         try {
             for (int x = 0; x < vetor.length; x++) {
