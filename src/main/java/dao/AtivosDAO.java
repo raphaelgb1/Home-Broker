@@ -94,7 +94,17 @@ public class AtivosDAO extends Object implements Cloneable {
     public void setUltimo_valor(Double ultimo_valor) {
         this.ultimo_valor = ultimo_valor;
     }
-
+    /* --------------------------------------------------------------- */
+    public double quantidade_excultada;
+    public double getQuantidade_excultada() {
+        return quantidade_excultada;
+    }
+    public void setQuantidade_excultada(double quantidade_excultada) {
+        this.quantidade_excultada = quantidade_excultada;
+    }
+    
+    /* --------------------------------------------------------------- */
+    
     public void newData(int id, String empresa, String ticker,int total_de_ativos,
                         double preço_inicial,String dataCriacao,String dataModificacao) {
         this.setId(id);
@@ -104,6 +114,7 @@ public class AtivosDAO extends Object implements Cloneable {
         this.setPreço_inicial(preço_inicial);
         this.setDataCriacao(dataCriacao);
         this.setDataModificacao(dataModificacao);
+        this.setQuantidade_excultada(0);;
     }
     public AtivosDAO ativosBook(String data, int id){
 

@@ -10,7 +10,7 @@ import controller.CrudController;
  *
  * @author rapha
  */
-public class ContaDAO extends CrudController {
+public class ContaDAO {
     public int id;
     public int cliente;
     public double saldo;
@@ -23,6 +23,10 @@ public class ContaDAO extends CrudController {
         this.saldo = saldo;
         this.dataCriacao = dataCriacao;
         this.dataModificacao = dataModificacao;
+    }
+
+    public double getSaldo() {
+      return saldo;
     }
 
     public boolean setSaldo (double saldo) {

@@ -1,17 +1,17 @@
-package dao;
+// package dao;
 
-import controller.CrudController;
+// import controller.CrudController;
 
-public class InvestOrdemDAO extends CrudController {
+// public class InvestOrdemDAO {
 
-    OrdemDAO ordem;
+//     OrdemDAO ordem;
 
-    public void newData(OrdemDAO ordem){
-        this.ordem = ordem;
-    }
+//     public void newData(OrdemDAO ordem){
+//         this.ordem = ordem;
+//     }
 
-    public OrdemDAO getOrdem(){
-        return this.ordem;
-    }
+//     public OrdemDAO getOrdem(){
+//         return this.ordem;
+//     }
     
-}
+// }

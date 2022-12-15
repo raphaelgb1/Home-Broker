@@ -20,7 +20,7 @@ public class OperacoesContaDAO {
     public String dataCriacao;
     public String dataModificacao;
     
-    public void newData (int id, int conta, int contaTransferencia, int operacao, double saldoFinal, int tipo, String descricao, double valor, String dataCriacao, String dataModificacao) {
+    public void newData (int id, int conta, int contaTransferencia, int operacao, int tipo, double saldoFinal,  double valor, String descricao,  String dataCriacao, String dataModificacao) {
         this.id = id;
         this.conta = conta;
         this.contaTransferencia = contaTransferencia;
