@@ -797,8 +797,15 @@ public class HomeBroker {
                                                                     "Saldo Final: " + number.format(element.saldoFinal) + "\n------------------------------\n";
                                                         }
                                                         
+                                                        Map<String, Set> vetores = new LinkedHashMap<String, Set>();
+                                                        vetores.put("Conta", vetorConta);
+                                                        vetores.put("Cliente", vetorCliente);
+
+                                                        Map<String, String> datas = new LinkedHashMap<String, String>();
+                                                        datas.put("Inicio", formatBanco.format(dtinicio));
+                                                        datas.put("Final", formatBanco.format(dtfinal));
                                                         if(vetorOperacoes.size() > 4 && opOffset == 0) {
-                                                            int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n1 - Próximo\n0 - Voltar\nPágina: " + pag));
+                                                            int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n9 - Salvar Extrato\n1 - Próximo\n0 - Voltar\nPágina: " + pag));
                                                             if(aux == 1) {
                                                                 opOffset+=5;
                                                                 pag++;
@@ -806,9 +813,11 @@ public class HomeBroker {
                                                             } else if (aux == 0) {
                                                                 opExtrato = 0;
                                                                 break;
+                                                            } else if (aux == 9) {
+                                                                pdfController.gerarPdf(conta, vetores, datas);
                                                             }
                                                         } else if (vetorOperacoes.size() > 4 && opOffset >= 1) {
-                                                            int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n1 - Próximo\n2 - Anterior\n0 - Voltar\nPágina: " + pag));
+                                                            int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n9 - Salvar Extrato\n1 - Próximo\n2 - Anterior\n0 - Voltar\nPágina: " + pag));
                                                             if(aux == 1) {
                                                                 opOffset+=5;
                                                                 pag++;
@@ -820,10 +829,12 @@ public class HomeBroker {
                                                                 opOffset-=5;
                                                                 pag--;
                                                                 continue;
+                                                            } else if (aux == 9) {
+                                                                pdfController.gerarPdf(conta, vetores, datas);
                                                             }
                                                         } else if (vetorOperacoes.size() <= 4 && opOffset >= 1){
                                                             if(vetorOperacoes.size() == 0) extrato = "Não há mais resultados";
-                                                            int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n2 - Anterior\n0 - Voltar\nPágina: " + pag));
+                                                            int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n9 - Salvar Extrato\n2 - Anterior\n0 - Voltar\nPágina: " + pag));
                                                             if(aux == 2) {
                                                                 opOffset-=5;
                                                                 pag--;
@@ -831,14 +842,21 @@ public class HomeBroker {
                                                             } else if (aux == 0) {
                                                                 opExtrato = 0;
                                                                 break;
+                                                            } else if (aux == 9) {
+                                                                pdfController.gerarPdf(conta, vetores, datas);
                                                             }
                                                         } else {
-                                                            if(vetorOperacoes.size() == 0) extrato = "Nenhuma movimentação encontrada";
-                                                            int aux = 0;
-                                                            JOptionPane.showMessageDialog(null, extrato);
+                                                            if(vetorOperacoes.size() == 0) {
+                                                                extrato = "Nenhuma movimentação encontrada";
+                                                                JOptionPane.showMessageDialog(null, extrato);
+                                                                break;
+                                                            }
+                                                            int aux = Integer.parseInt(JOptionPane.showInputDialog(extrato + "\n\n9 - Salvar Extrato\n0 - Voltar\nPágina: " + pag));
                                                             if (aux == 0) {
                                                                 opExtrato = 0;
                                                                 break;
+                                                            } else if (aux == 9) {
+                                                                pdfController.gerarPdf(conta, vetores, datas);
                                                             }
                                                         }
                                                     } while (opExtrato != 0);
