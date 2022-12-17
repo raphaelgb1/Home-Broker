@@ -546,8 +546,8 @@ public class HomeBroker {
                                                     JOptionPane.showMessageDialog(null,"R$ " + dividendo);// pode apagar essa linha
                                                     
                                                     //DEVOLVE O SALDO CALCULADO
-                                                    operacoesContaController.depositoSaque(contaAdm, contaUdpdate, dividendo, false, 3, "", calendario);
-                                                    operacoesContaController.depositoSaque(contaUdpdate, contaAdm, dividendo, true, 3, "", calendario);
+                                                    operacoesContaController.depositoSaque(contaAdm, contaUdpdate, dividendo, false, 4, "", calendario);
+                                                    operacoesContaController.depositoSaque(contaUdpdate, contaAdm, dividendo, true, 5, "", calendario);
 
                                                     JOptionPane.showMessageDialog(null,"Dividendo Depositado");
 
@@ -608,8 +608,8 @@ public class HomeBroker {
                                     if(book.Cadastro_Ordem(Ordem)) {
                                         String descricao = JOptionPane.showInputDialog("Adicione uma descrição (Opcional");
                                         
-                                        operacoesContaController.depositoSaque(pagador, recebedor, valor, false, 3, descricao, calendario);
-                                        operacoesContaController.depositoSaque(recebedor, pagador, valor, true, 3, descricao, calendario); 
+                                        operacoesContaController.depositoSaque(pagador, recebedor, valor, false, 4, descricao, calendario);
+                                        operacoesContaController.depositoSaque(recebedor, pagador, valor, true, 5, descricao, calendario); 
                                         JOptionPane.showMessageDialog(null, "Ordem de compra efetuada");
 
                                     } else {
