@@ -3,6 +3,7 @@ package dao;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import controller.DBConnectionController;
@@ -43,10 +44,38 @@ public class NewBookDAO {
     }
     public double get_quantidadeordenscompra(int id_conta, int id_ativo){
         try {
+            String sql = "SELECT " 
+            + "(CASE "
+                + " WHEN (SELECT "
+                + " SUM(QUANTEXE)"
+                  + " FROM ORDENS"
+                    + " WHERE IDCONTA = " + id_conta + " AND " + id_ativo + " = IDATIVO"
+                  + " AND TIPOORDEN = 1) IS NULL THEN 0"
+                + " ELSE (SELECT "
+                  + " SUM(QUANTEXE)"
+                  + " FROM ORDENS"
+                      + " WHERE IDCONTA = " + id_conta + " AND " + id_ativo + " = IDATIVO"
+                  + " AND TIPOORDEN = 1)"
+            + " END "
+            + " - CASE "
+                + " WHEN (SELECT "
+                  + " SUM(QUANTEXE)"
+                  + " FROM ORDENS"
+                     + "  WHERE IDCONTA = " + id_conta + " AND " + id_ativo + " = IDATIVO"
+                  + " AND TIPOORDEN = 2) IS NULL THEN 0"
+                + " ELSE (SELECT "
+                  + " SUM(QUANTEXE)"
+                  + " FROM ORDENS"
+                      + " WHERE IDCONTA = " + id_conta + " AND " + id_ativo + " = IDATIVO"
+                  + " AND TIPOORDEN = 2)"
+              + " END) AS QTD"
+        + " FROM ORDENS "
+        + " WHERE IDCONTA = " + id_conta + " "
+        + " AND IDATIVO = " + id_ativo + ";";
             int count = 0;
-            ResultSet result  = dbconect.execute("SELECT QUANT, QUANTEXE  FROM ORDENS o WHERE " + id_conta + " = IDCONTA AND " + id_ativo + " = IDATIVO AND QUANTEXE > 0;");
-            while(result.next()){
-                count += result.getInt("QUANT") - result.getInt("QUANTEXE");
+            ResultSet result  = dbconect.execute(sql);
+            if(result.next()){
+                count = result.getInt("QTD");
             }
             return count;
         } catch (SQLException err) {
@@ -64,7 +93,7 @@ public class NewBookDAO {
         }
         return extrato;
     }
-    public boolean Cadastro_Ordem(NewOrdenDAO Ordem){
+    public boolean Cadastro_Ordem(NewOrdenDAO Ordem) throws SQLException{
         Map <String,String> map = new LinkedHashMap<String,String>();
         map.put("IDATIVO", Integer.toString(Ordem.IDATIVO));
         map.put("IDCONTA", Integer.toString(Ordem.IDCONTA));
@@ -76,6 +105,8 @@ public class NewBookDAO {
         int status = 0;
         status = dbconect.insert("ORDENS",map);
         if(status > 0){
+            verificaOrdem(Ordem, status);
+
             return true;
         }
         return false;
@@ -87,17 +118,19 @@ public class NewBookDAO {
                 double count = 0;
                 double cont = 0;
                 double media = 0;
-                ResultSet result  = dbconect.execute("SELECT a.IDATIVO, a.TICKER , o.VALOR , a.DESCRICAO , o.QUANTEXE  FROM ATIVO a right join ORDENS o on a.IDATIVO = o.IDATIVO WHERE " + id_conta + " = o.IDCONTA AND " + obj.IDATIVO + " = o.IDATIVO AND QUANTEXE > 0;");
-                extrato += "Id Ativo: " + result.getInt("a.IDATIVO") + ",   ";
-                extrato += "Ticker: " + result.getInt("a.TICKER") + ",   ";
-                extrato += "Empresa: " + result.getInt("a.DESCRICAO") + ",   ";
-                while(result.next()){
-                    media += result.getInt("o.VALOR");
-                    count += result.getInt("o.QUANTEXE");
-                    cont++;
+                ResultSet result  = dbconect.execute("SELECT a.IDATIVO, a.TICKER , o.VALOR , a.DESCRICAO , o.QUANTEXE FROM ORDENS o left join ATIVO a on a.IDATIVO = o.IDATIVO WHERE " + id_conta + " = o.IDCONTA AND " + obj.IDATIVO + " = o.IDATIVO AND QUANTEXE > 0;");
+                if(result.next()){
+                    extrato += "Id Ativo: " + result.getInt("IDATIVO") + ",   ";
+                    extrato += "Ticker: " + result.getInt("TICKER") + ",   ";
+                    extrato += "Empresa: " + result.getInt("DESCRICAO") + ",   ";
+                    while(result.next()){
+                        media += result.getInt("VALOR");
+                        count += result.getInt("QUANTEXE");
+                        cont++;
+                    }
+                    extrato += "Valor: R$" + (double)Math.round(media/cont) + ",   ";
+                    extrato += "Quantidade: " + count + ";\n";
                 }
-                extrato += "Valor: R$" + (double)Math.round(media/cont) + ",   ";
-                extrato += "Quantidade: " + count + ";\n";
             }
             return extrato;
         }
@@ -109,19 +142,52 @@ public class NewBookDAO {
         try{
             String extrato = "";
             for (NewAtivoDAO obj : this.Ativos) {
-                ResultSet result  = dbconect.execute("SELECT a.IDATIVO, a.TICKER , o.VALOR , a.DESCRICAO , o.QUANTEXE  FROM ATIVO a right join ORDENS o on a.IDATIVO = o.IDATIVO WHERE " + obj.IDATIVO + " = o.IDATIVO AND (o.QUANT - o.QUANTEXE) > 0;");
+                ResultSet result  = dbconect.execute("SELECT o.IDATIVO, a.TICKER , o.VALOR , a.DESCRICAO , o.QUANTEXE, o.QUANT , o.TIPOORDEN FROM ORDENS o left join ATIVO a on a.IDATIVO = o.IDATIVO WHERE " + obj.IDATIVO + " = o.IDATIVO AND (o.QUANT - o.QUANTEXE) > 0;");
                 while(result.next()){
-                extrato += "Id Ativo: " + result.getInt("a.IDATIVO") + ",   ";
-                extrato += "Ticker: " + result.getInt("a.TICKER") + ",   ";
-                extrato += "Empresa: " + result.getInt("a.DESCRICAO") + ",   ";
-                extrato += "Valor: R$" + result.getInt("o.VALOR") + ",   ";
-                extrato += "Quantidade: " + result.getInt("o.QUANTEXE") + ";\n";
+                    extrato += "Id Ativo: " + result.getInt("IDATIVO") + ",   ";
+                    extrato += "Ticker: " + result.getInt("TICKER") + ",   ";
+                    extrato += "Empresa: " + result.getInt("DESCRICAO") + ",   ";
+                    extrato += "Tipo: " + (result.getInt("TIPOORDEN") == 1 ? "Compra" : "Venda") + ",   ";
+                    extrato += "Valor: R$" + result.getInt("VALOR") + ",   ";
+                    extrato += "Quantidade: " + (result.getInt("QUANT") - result.getInt("QUANTEXE"))+ ";\n";
                 }
             }
             return extrato;
         }
         catch (Exception err ){
             return "";
+        }
+    }
+    private void verificaOrdem(NewOrdenDAO Ordem, int id_Ordem) throws SQLException{
+        while(!((Ordem.QUANT - Ordem.QUANTEXE) == 0)){
+            String sql = "SELECT IDORDENS, (QUANT - QUANTEXE) as QTD, QUANTEXE  FROM ORDENS WHERE " + (Ordem.TIPOORDEN == 1 ? "2" : "1") + " = TIPOORDEN AND VALOR <= " + Ordem.VALOR + " and (QUANT - QUANTEXE) > 0 ORDER by VALOR ASC LIMIT 1;";
+            ResultSet result  = dbconect.execute(sql);
+            if (!result.next())
+                break;
+            int id_sql = result.getInt("IDORDENS");
+            int quant = result.getInt("QTD");
+            int quantexe = result.getInt("QUANTEXE");
+            result.close();
+            if ((Ordem.QUANT - Ordem.QUANTEXE) >= quant ) {
+                Ordem.QUANTEXE += quant;
+                Map <String,String> map = new LinkedHashMap<String,String>();
+                map.put("IDORDENS", Integer.toString(id_Ordem));
+                map.put("QUANTEXE", Integer.toString(Ordem.QUANTEXE));
+                dbconect.update("ORDENS","IDORDENS", id_Ordem, map);
+                map.put("IDORDENS", Integer.toString(id_sql));
+                map.put("QUANTEXE", Integer.toString(quant));
+                dbconect.update("ORDENS","IDORDENS", id_sql, map);
+            }else{
+                quant = (Ordem.QUANT - Ordem.QUANTEXE) + quantexe;
+                Ordem.QUANTEXE = Ordem.QUANT;
+                Map <String,String> map = new LinkedHashMap<String,String>();
+                map.put("IDORDENS", Integer.toString(id_Ordem));
+                map.put("QUANTEXE", Integer.toString(Ordem.QUANTEXE));
+                dbconect.update("ORDENS","IDORDENS", id_Ordem, map);
+                map.put("IDORDENS", Integer.toString(id_sql));
+                map.put("QUANTEXE", Integer.toString(quant));
+                dbconect.update("ORDENS","IDORDENS", id_sql, map);
+            }
         }
     }
     

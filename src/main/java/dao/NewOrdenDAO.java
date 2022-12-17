@@ -4,8 +4,8 @@ public class NewOrdenDAO{
     int IDATIVO;
     int IDCONTA;
     int TIPOORDEN;
-    double QUANT;
-    double QUANTEXE;
+    int QUANT;
+    int QUANTEXE;
     double VALOR;
     String DATAORDEN;
     public NewOrdenDAO(int iDCONTA) {
@@ -32,13 +32,13 @@ public class NewOrdenDAO{
     public double getQUANT() {
         return QUANT;
     }
-    public void setQUANT(double qUANT) {
+    public void setQUANT(int qUANT) {
         QUANT = qUANT;
     }
     public double getQUANTEXE() {
         return QUANTEXE;
     }
-    public void setQUANTEXE(double qUANTEXE) {
+    public void setQUANTEXE(int qUANTEXE) {
         QUANTEXE = qUANTEXE;
     }
     public double getVALOR() {
