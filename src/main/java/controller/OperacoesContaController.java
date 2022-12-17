@@ -6,15 +6,11 @@ package controller;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.Set;
-
-import javax.swing.JOptionPane;
-import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
@@ -29,6 +25,7 @@ import dao.OperacoesContaDAO;
 public class OperacoesContaController extends CrudController {
 
     SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+    SimpleDateFormat formatBanco = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     DBConnectionController dbConnectionController = new DBConnectionController();
     public Set search(int id, int offset, String dtinicial, String dtfinal) {
 
@@ -120,15 +117,33 @@ public class OperacoesContaController extends CrudController {
         }
     }
     
-    public double depositoSaque (double saldo, double valor, boolean tipo){
+    public void depositoSaque (int idConta, double saldo, double valor, boolean depSaq, int tipo, String descricao, GregorianCalendar calendario){
         try {
-            if(tipo){//DEPÓSITO
-                return saldo += valor;
+            Map<String,String> objUpdate = new LinkedHashMap<String,String>();
+            int operacao = 0;
+
+            if(depSaq){//DEPÓSITO
+                operacao = 1;
+                saldo += valor;
             } else {//SAQUE
-                return saldo -= valor;
+                operacao = 2;
+                saldo -= valor;
             }
+            
+            objUpdate.put("SALDO", Double.toString(saldo));
+            dbConnectionController.update("CONTA", "IDCONTA", idConta, objUpdate);
+
+            objUpdate.put("IDCONTA", Integer.toString(idConta));                                                                               
+            objUpdate.put("OPERACAO", Double.toString(operacao));                                        
+            objUpdate.put("TIPO", Integer.toString(tipo));                                        
+            objUpdate.put("SALDOFINAL", Double.toString(saldo));
+            objUpdate.put("VALOROP", Double.toString(valor));
+            objUpdate.put("DESCRICAO", descricao); 
+            objUpdate.put("DTCRIACAO", formatBanco.format(calendario.getTime())); 
+            dbConnectionController.insert("OPERACOES", objUpdate);
+
         } catch (Exception err) {
-            return -1;
+            throw err;
         }
     }
 
