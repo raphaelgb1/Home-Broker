@@ -562,7 +562,7 @@ public class HomeBroker {
                                     // int id_Ordem = Integer.parseInt(JOptionPane.showInputDialog(book.Ativos_book() + "\n\nQual \"ID\" do ativo:"));
                                     do {
                                         opUpdate = 0;
-                                        if(vetorCliente.size() == 0){
+                                        if(vetorCliente.size() != 0){
                                             String auxMenuClienteUpdate = "";
                                             for (ClienteDAO element : vetorCliente) {
                                                 if(element != null){
@@ -581,7 +581,7 @@ public class HomeBroker {
                                                 if(verifySenha.hashCode() == user.senha.hashCode()){//VERIFICAR SENHA
                                                     int id_ativo = Integer.parseInt(JOptionPane.showInputDialog(book.Ativos_book() + "\n\nQual \"ID\" do ativo:"));
                                                     Double preco_dividendo = Double.parseDouble(JOptionPane.showInputDialog("Qual valor do dividendo"));
-                                                    Double dividendo = book.get_quantidadeordenscompra(id_ativo, contaAdm.id) * preco_dividendo; //Valor do dividendo
+                                                    Double dividendo = book.get_quantidadeordenscompra(contaUdpdate.id,id_ativo) * preco_dividendo; //Valor do dividendo
                                                     JOptionPane.showMessageDialog(null,"R$ " + dividendo);// pode apagar essa linha
                                                     
                                                     //DEVOLVE O SALDO CALCULADO
@@ -1122,7 +1122,7 @@ public class HomeBroker {
                                         }
                                     
                                 break;
-                                case 6://listar ativos Meus
+                                case 6://liteus
                                     String Meus_ativos = book.getMeu_ativo(conta.id);
                                     if(Meus_ativos == "")
                                         JOptionPane.showMessageDialog(null,"Você não tem ativos");
