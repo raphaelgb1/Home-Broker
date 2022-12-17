@@ -80,7 +80,7 @@ public class CobrancaDeTaxa {
         }
     }
 
-    public Set cobrarTaxa (GregorianCalendar calendario, Set<ContaDAO> vetorConta) {
+    public void cobrarTaxa (GregorianCalendar calendario, Set<ContaDAO> vetorConta) {
         try {
             Map result = this.getIds(calendario);
             Map<String, String> objUpdate = new LinkedHashMap<String, String>();
@@ -97,27 +97,10 @@ public class CobrancaDeTaxa {
                 if (contaCobranca == null) {
                     continue;
                 }
-                
-                CobrancaDAO taxaUsuario = new CobrancaDAO();                            
-                CobrancaDAO taxaAdm = new CobrancaDAO();
-        
-                double saldo = operacoesContaController.depositoSaque(contaCobranca.getSaldo(), 20, false);
-                taxaUsuario.newData(contaCobranca.id, contaAdm.id, saldo);
-                contaCobranca.setSaldo(saldo);
-        
-                objUpdate.put("SALDO", Double.toString(saldo));
-                dbConn.update("CONTA", "IDCONTA", contaCobranca.id, objUpdate);
-        
-                saldo = operacoesContaController.depositoSaque(contaAdm.getSaldo(), 20, true);
-                taxaAdm.newData(contaAdm.id, contaCobranca.id, saldo);
-                objUpdate.put("SALDO", Double.toString(saldo));
-                dbConn.update("CONTA", "IDCONTA", contaAdm.id, objUpdate);
-                contaAdm.setSaldo(saldo);
-        
-                aux.add(taxaUsuario);
-                aux.add(taxaAdm);
+                String descricao = "Cobrança de Taxa Mensal";
+                operacoesContaController.depositoSaque(contaCobranca, contaAdm, 20, false, 4, descricao, calendario);
+                operacoesContaController.depositoSaque(contaAdm, contaCobranca, 20, true, 5, descricao, calendario);
             }
-            return aux;
         } catch (Exception err) {
             JOptionPane.showMessageDialog(null, err.getMessage());
             throw err;

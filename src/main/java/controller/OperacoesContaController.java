@@ -117,26 +117,31 @@ public class OperacoesContaController extends CrudController {
         }
     }
     
-    public void depositoSaque (int idConta, double saldo, double valor, boolean depSaq, int tipo, String descricao, GregorianCalendar calendario){
+    public void depositoSaque (ContaDAO conta, ContaDAO contaDE, double valor, boolean depSaq, int tipo, String descricao, GregorianCalendar calendario){
         try {
             Map<String,String> objUpdate = new LinkedHashMap<String,String>();
             int operacao = 0;
 
             if(depSaq){//DEPÓSITO
                 operacao = 1;
-                saldo += valor;
+                conta.saldo += valor;
             } else {//SAQUE
                 operacao = 2;
-                saldo -= valor;
+                conta.saldo -= valor;
+
+                if(conta.saldo <= 0) {
+                    new Exception("Saldo Insuficiente");
+                }
             }
             
-            objUpdate.put("SALDO", Double.toString(saldo));
-            dbConnectionController.update("CONTA", "IDCONTA", idConta, objUpdate);
+            objUpdate.put("SALDO", Double.toString(conta.saldo));
+            dbConnectionController.update("CONTA", "IDCONTA", conta.id, objUpdate);
 
-            objUpdate.put("IDCONTA", Integer.toString(idConta));                                                                               
+            objUpdate.put("IDCONTA", Integer.toString(conta.id));                                                                               
+            objUpdate.put("IDCONTADEST", Integer.toString(contaDE.id));                                                                               
             objUpdate.put("OPERACAO", Double.toString(operacao));                                        
             objUpdate.put("TIPO", Integer.toString(tipo));                                        
-            objUpdate.put("SALDOFINAL", Double.toString(saldo));
+            objUpdate.put("SALDOFINAL", Double.toString(conta.saldo));
             objUpdate.put("VALOROP", Double.toString(valor));
             objUpdate.put("DESCRICAO", descricao); 
             objUpdate.put("DTCRIACAO", formatBanco.format(calendario.getTime())); 

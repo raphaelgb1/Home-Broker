@@ -53,7 +53,10 @@ public class PDFController {
                 titulo.add(titular.nome);
                 titulo.setAlignment(1);
                 doc.add(titulo);
-                doc.add(new Paragraph("Conta: " + conta.id + "\n\n"));
+                Paragraph tituloConta = new Paragraph();
+                tituloConta.add("Conta: " + conta.id + "\n\n");
+                tituloConta.setAlignment(1);
+                doc.add(tituloConta);
                 int count = 0;
                 for (OperacoesContaDAO element : vetor) {
 
@@ -62,7 +65,7 @@ public class PDFController {
                         pagador = clienteController.returnObjectById(contaPagador.cliente, vetores.get("Cliente"));
                     }
 
-                    if(count == 5) doc.newPage();
+                    if(count == 4) doc.newPage();
                     doc.add(new Paragraph((element.operacao == 2) ? "Saida\n" : "Entrada\n"));
                     doc.add(new Paragraph((element.tipo == 5) ? "Recebido de: " + pagador.nome + "\n" : ""));
                     doc.add(new Paragraph((element.tipo == 3) ? "Enviado para: " + pagador.nome + "\n" : ""));
