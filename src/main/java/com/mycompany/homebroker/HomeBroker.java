@@ -546,8 +546,8 @@ public class HomeBroker {
                                                     JOptionPane.showMessageDialog(null,"R$ " + dividendo);// pode apagar essa linha
                                                     
                                                     //DEVOLVE O SALDO CALCULADO
-                                                    operacoesContaController.depositoSaque(contaAdm, contaUdpdate, dividendo, false, 4, "", calendario);
-                                                    operacoesContaController.depositoSaque(contaUdpdate, contaAdm, dividendo, true, 5, "", calendario);
+                                                    operacoesContaController.depositoSaque(contaAdm, contaUdpdate, dividendo, false, 4, "Pagamento Dividendo", calendario);
+                                                    operacoesContaController.depositoSaque(contaUdpdate, contaAdm, dividendo, true, 5, "Pagamento Dividendo", calendario);
 
                                                     JOptionPane.showMessageDialog(null,"Dividendo Depositado");
 

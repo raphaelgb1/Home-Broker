@@ -6,11 +6,14 @@ import java.util.Map;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.NumberFormat;
+
 import controller.DBConnectionController;
 
 public class NewBookDAO {
     ArrayList<NewAtivoDAO> Ativos = new ArrayList<NewAtivoDAO>();//so vai guarda os ativos do book de ofertas
     DBConnectionController dbconect = new DBConnectionController();
+    NumberFormat number = NumberFormat.getCurrencyInstance();
     public NewBookDAO() {
         try {
             String sql = "SELECT * FROM ATIVO;";
@@ -116,21 +119,22 @@ public class NewBookDAO {
         try{
             String extrato = "";
             for (NewAtivoDAO obj : this.Ativos) {
-                double count = 0;
-                double cont = 0;
+                int count = 0;
+                int cont = 0;
                 double media = 0;
                 ResultSet result  = dbconect.execute("SELECT a.IDATIVO, a.TICKER , o.VALOR , a.DESCRICAO , o.QUANTEXE FROM ORDENS o left join ATIVO a on a.IDATIVO = o.IDATIVO WHERE " + id_conta + " = o.IDCONTA AND " + obj.IDATIVO + " = o.IDATIVO AND QUANTEXE > 0;");
                 if(result.next()){
-                    extrato += "Id Ativo: " + result.getInt("IDATIVO") + ",   ";
-                    extrato += "Ticker: " + result.getInt("TICKER") + ",   ";
-                    extrato += "Empresa: " + result.getInt("DESCRICAO") + ",   ";
+                    extrato += "Id Ativo: " + result.getInt("IDATIVO") + "\n";
+                    extrato += "Ticker: " + result.getString("TICKER") + "\n";
+                    extrato += "Empresa: " + result.getString("DESCRICAO") + "\n";
                     while(result.next()){
                         media += result.getInt("VALOR");
                         count += result.getInt("QUANTEXE");
                         cont++;
                     }
-                    extrato += "Valor: R$" + (double)Math.round(media/cont) + ",   ";
-                    extrato += "Quantidade: " + count + ";\n";
+                    extrato += "Valor: " + number.format((double)Math.round(media/cont)) + "\n";
+                    extrato += "Quantidade: " + count + ";";
+                    extrato += "\n------------------------------\n";
                 }
             }
             return extrato;
