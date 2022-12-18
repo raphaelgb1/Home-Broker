@@ -77,6 +77,7 @@ public class NewBookDAO {
             if(result.next()){
                 count = result.getInt("QTD");
             }
+            result.close();
             return count;
         } catch (SQLException err) {
             System.out.println(err.getMessage());
