@@ -7,6 +7,7 @@ import java.util.Map;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 
 import controller.DBConnectionController;
 
@@ -14,6 +15,7 @@ public class NewBookDAO {
     ArrayList<NewAtivoDAO> Ativos = new ArrayList<NewAtivoDAO>();//so vai guarda os ativos do book de ofertas
     DBConnectionController dbconect = new DBConnectionController();
     NumberFormat number = NumberFormat.getCurrencyInstance();
+    SimpleDateFormat formatBanco = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public NewBookDAO() {
         try {
             String sql = "SELECT * FROM ATIVO;";
@@ -87,13 +89,17 @@ public class NewBookDAO {
             throw null;
         }
     }
-    public String Ativos_book(){
+    public String Ativos_book() throws SQLException{
         String extrato = "";
         for (NewAtivoDAO element : this.Ativos) {
+            String sql = "SELECT a.IDATIVO, a.TICKER, a.DESCRICAO, o.DATAORDEN, o.VALOR FROM ATIVO a left join ORDENS o on (o.IDATIVO = a.IDATIVO) WHERE o.IDATIVO = " + element.IDATIVO +" ORDER by o.DATAORDEN DESC LIMIT 1;";
+            ResultSet result  = dbconect.execute(sql);
             extrato += "Id: " + element.IDATIVO + "\n";
             extrato += "Ticker: " + element.TICKER + "\n";
             extrato += "Empresa: " + element.IDATIVO + "\n";
+            extrato += "Ultimo Valor negociado: " + number.format(result.getDouble("VALOR"));
             extrato += "\n------------------------------\n";
+            result.close();
         }
         return extrato;
     }

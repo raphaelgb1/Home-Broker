@@ -910,9 +910,9 @@ public class HomeBroker {
                                     break;
 
                                 case 3://ATIVOS****************************************
-
                                     //CRIAR AQUI A TELA MEUS ATIVOS
-                                        JOptionPane.showMessageDialog(null, book.Ativos_book());
+                                        NewBookDAO BookTemp = new NewBookDAO();
+                                        JOptionPane.showMessageDialog(null, BookTemp.Ativos_book());
                                     break;
 
                                 case 4://ORDEM****************************************
@@ -947,7 +947,7 @@ public class HomeBroker {
                                     do {
                                         Ordem.setQUANT(Integer.parseInt(JOptionPane.showInputDialog("Quantidade de Ativos " + (Ordem.getTIPOORDEN() == 2 ? "a Vender"+ "(de 0 a" + book.get_quantidadeordenscompra(Ordem.getIDCONTA(),Ordem.getIDATIVO())+")" : "a comprar"))));    
                                     } while (Ordem.getTIPOORDEN() == 2 && (Ordem.getQUANT() > 0 && Ordem.getQUANT() >= book.get_quantidadeordenscompra(Ordem.getIDCONTA(),Ordem.getIDATIVO())) && conta.id != 0);
-                                    Ordem.setDATAORDEN(format.format(calendario.getTime()));
+                                    Ordem.setDATAORDEN(formatBanco.format(calendario.getTime()));
                                     
                                     double valor = Ordem.getQUANT()*Ordem.getVALOR();
                                     ContaDAO pagador = conta ;
@@ -1001,6 +1001,7 @@ public class HomeBroker {
                                     if(Meus_ativos == "")
                                         JOptionPane.showMessageDialog(null,"Você não tem ativos");
                                     else
+
                                         JOptionPane.showMessageDialog(null, Meus_ativos);
                                 break;
                                 case 7://listar ativos bolsa
